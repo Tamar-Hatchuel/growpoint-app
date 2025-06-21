@@ -8,16 +8,18 @@ import { ArrowLeft, User, Users } from 'lucide-react';
 
 interface IdentificationScreenProps {
   onBack: () => void;
+  onContinue: (data: { name: string; team: string }) => void;
 }
 
-const IdentificationScreen: React.FC<IdentificationScreenProps> = ({ onBack }) => {
+const IdentificationScreen: React.FC<IdentificationScreenProps> = ({ onBack, onContinue }) => {
   const [name, setName] = useState('');
   const [team, setTeam] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('User identification:', { name, team });
-    // Here you would typically proceed to the next screen
+    if (name.trim() && team.trim()) {
+      onContinue({ name: name.trim(), team: team.trim() });
+    }
   };
 
   return (

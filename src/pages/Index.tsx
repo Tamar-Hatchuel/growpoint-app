@@ -25,7 +25,7 @@ const Index = () => {
   const [userData, setUserData] = useState<UserData>({});
 
   const handleWelcomeStart = () => {
-    setCurrentStep('identification');
+    setCurrentStep('department');
   };
 
   const handleIdentificationContinue = (data: { name: string; team: string }) => {
@@ -59,12 +59,17 @@ const Index = () => {
   // Render current step
   switch (currentStep) {
     case 'identification':
-      return <IdentificationScreen onBack={() => goBack('welcome')} />;
+      return (
+        <IdentificationScreen 
+          onBack={() => goBack('welcome')} 
+          onContinue={handleIdentificationContinue}
+        />
+      );
     
     case 'department':
       return (
         <DepartmentSelectionScreen 
-          onBack={() => goBack('identification')} 
+          onBack={() => goBack('welcome')} 
           onContinue={handleDepartmentContinue}
         />
       );
