@@ -1,10 +1,11 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { ArrowLeft, CheckCircle, AlertTriangle, XCircle, TrendingUp, Users } from 'lucide-react';
+import RestartConfirmationModal from './RestartConfirmationModal';
+import EngagementToolsToast from './EngagementToolsToast';
 
 interface InsightsScreenProps {
   onBack: () => void;
@@ -47,6 +48,28 @@ const chartConfig = {
 };
 
 const InsightsScreen: React.FC<InsightsScreenProps> = ({ onBack, onRestart, focusArea, department }) => {
+  const [showRestartModal, setShowRestartModal] = useState(false);
+  const [showEngagementToast, setShowEngagementToast] = useState(true);
+
+  const handleRestartClick = () => {
+    setShowRestartModal(true);
+  };
+
+  const handleRestartConfirm = () => {
+    setShowRestartModal(false);
+    onRestart();
+  };
+
+  const handleRestartCancel = () => {
+    setShowRestartModal(false);
+  };
+
+  const handleTryEngagementTools = () => {
+    setShowEngagementToast(false);
+    // Navigate to engagement tools section (placeholder)
+    console.log('Navigating to engagement tools...');
+  };
+
   const getInsightByFocus = () => {
     switch (focusArea) {
       case 'maintain':
@@ -109,119 +132,133 @@ const InsightsScreen: React.FC<InsightsScreenProps> = ({ onBack, onRestart, focu
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-4">
-      <div className="max-w-6xl mx-auto animate-fade-in">
-        <Button
-          variant="ghost"
-          onClick={onBack}
-          className="mb-6 text-growpoint-dark hover:text-growpoint-accent hover:bg-growpoint-soft/50"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Focus Selection
-        </Button>
-        
-        {/* Main Insight Card */}
-        <Card className="border-growpoint-accent/20 shadow-lg mb-8">
-          <CardHeader className="text-center pb-6">
-            <div className="flex justify-center mb-4">
-              <div className="bg-growpoint-soft p-3 rounded-full">
-                <insight.icon className={`w-8 h-8 ${statusColors[insight.status]}`} />
+    <>
+      <RestartConfirmationModal
+        open={showRestartModal}
+        onConfirm={handleRestartConfirm}
+        onCancel={handleRestartCancel}
+      />
+      
+      <EngagementToolsToast
+        show={showEngagementToast}
+        onClose={() => setShowEngagementToast(false)}
+        onTryTools={handleTryEngagementTools}
+      />
+      
+      <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-4">
+        <div className="max-w-6xl mx-auto animate-fade-in">
+          <Button
+            variant="ghost"
+            onClick={onBack}
+            className="mb-6 text-growpoint-dark hover:text-growpoint-accent hover:bg-growpoint-soft/50"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Focus Selection
+          </Button>
+          
+          {/* Main Insight Card */}
+          <Card className="border-growpoint-accent/20 shadow-lg mb-8">
+            <CardHeader className="text-center pb-6">
+              <div className="flex justify-center mb-4">
+                <div className="bg-growpoint-soft p-3 rounded-full">
+                  <insight.icon className={`w-8 h-8 ${statusColors[insight.status]}`} />
+                </div>
               </div>
-            </div>
-            <CardTitle className="text-2xl font-bold text-growpoint-dark flex items-center justify-center gap-2">
-              {statusIcons[insight.status]} {insight.title}
-            </CardTitle>
-            <CardDescription className="text-lg text-growpoint-dark/80 max-w-2xl mx-auto">
-              {insight.description}
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent>
-            <div className="bg-growpoint-soft/30 p-6 rounded-lg">
-              <h4 className="font-semibold text-growpoint-dark mb-4 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5" />
-                Recommended Actions
-              </h4>
-              <ul className="space-y-2">
-                {insight.recommendations.map((rec, index) => (
-                  <li key={index} className="flex items-start gap-2 text-growpoint-dark/80">
-                    <span className="text-growpoint-primary font-bold">•</span>
-                    {rec}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Charts Section */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-8">
-          {/* Team Cohesion Over Time */}
-          <Card className="border-growpoint-accent/20 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-growpoint-dark flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Team Cohesion Over Time
+              <CardTitle className="text-2xl font-bold text-growpoint-dark flex items-center justify-center gap-2">
+                {statusIcons[insight.status]} {insight.title}
               </CardTitle>
-              <CardDescription>Monthly cohesion scores (1-5 scale)</CardDescription>
+              <CardDescription className="text-lg text-growpoint-dark/80 max-w-2xl mx-auto">
+                {insight.description}
+              </CardDescription>
             </CardHeader>
+            
             <CardContent>
-              <ChartContainer config={chartConfig} className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={cohesionData}>
-                    <XAxis dataKey="month" />
-                    <YAxis domain={[0, 5]} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="cohesion" fill="var(--color-cohesion)" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
+              <div className="bg-growpoint-soft/30 p-6 rounded-lg">
+                <h4 className="font-semibold text-growpoint-dark mb-4 flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  Recommended Actions
+                </h4>
+                <ul className="space-y-2">
+                  {insight.recommendations.map((rec, index) => (
+                    <li key={index} className="flex items-start gap-2 text-growpoint-dark/80">
+                      <span className="text-growpoint-primary font-bold">•</span>
+                      {rec}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </CardContent>
           </Card>
           
-          {/* Engagement vs Friction */}
-          <Card className="border-growpoint-accent/20 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-growpoint-dark flex items-center gap-2">
-                <TrendingUp className="w-5 h-5" />
-                Engagement vs. Friction
-              </CardTitle>
-              <CardDescription>Weekly trends (1-10 scale)</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={chartConfig} className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={engagementData}>
-                    <XAxis dataKey="week" />
-                    <YAxis domain={[0, 10]} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Line type="monotone" dataKey="engagement" stroke="var(--color-engagement)" strokeWidth={3} dot={{ fill: "var(--color-engagement)" }} />
-                    <Line type="monotone" dataKey="friction" stroke="var(--color-friction)" strokeWidth={3} dot={{ fill: "var(--color-friction)" }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-        </div>
-        
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button
-            onClick={onRestart}
-            variant="outline"
-            className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft"
-          >
-            Take Survey Again
-          </Button>
-          <Button
-            onClick={() => window.print()}
-            className="bg-growpoint-primary hover:bg-growpoint-accent text-white"
-          >
-            Save Results
-          </Button>
+          {/* Charts Section */}
+          <div className="grid lg:grid-cols-2 gap-8 mb-8">
+            {/* Team Cohesion Over Time */}
+            <Card className="border-growpoint-accent/20 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-growpoint-dark flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Team Cohesion Over Time
+                </CardTitle>
+                <CardDescription>Monthly cohesion scores (1-5 scale)</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={chartConfig} className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={cohesionData}>
+                      <XAxis dataKey="month" />
+                      <YAxis domain={[0, 5]} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Bar dataKey="cohesion" fill="var(--color-cohesion)" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+            
+            {/* Engagement vs Friction */}
+            <Card className="border-growpoint-accent/20 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-growpoint-dark flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  Engagement vs. Friction
+                </CardTitle>
+                <CardDescription>Weekly trends (1-10 scale)</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={chartConfig} className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={engagementData}>
+                      <XAxis dataKey="week" />
+                      <YAxis domain={[0, 10]} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Line type="monotone" dataKey="engagement" stroke="var(--color-engagement)" strokeWidth={3} dot={{ fill: "var(--color-engagement)" }} />
+                      <Line type="monotone" dataKey="friction" stroke="var(--color-friction)" strokeWidth={3} dot={{ fill: "var(--color-friction)" }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              onClick={handleRestartClick}
+              variant="outline"
+              className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft"
+            >
+              Take Survey Again
+            </Button>
+            <Button
+              onClick={() => window.print()}
+              className="bg-growpoint-primary hover:bg-growpoint-accent text-white"
+            >
+              Save Results
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
