@@ -14,7 +14,7 @@ export type Database = {
           Department: string | null
           Email: string | null
           "Employee ID": number
-          "Employee Name": string | null
+          Employee_Name: string | null
           Permission: string | null
           Role: string | null
         }
@@ -22,7 +22,7 @@ export type Database = {
           Department?: string | null
           Email?: string | null
           "Employee ID": number
-          "Employee Name"?: string | null
+          Employee_Name?: string | null
           Permission?: string | null
           Role?: string | null
         }
@@ -30,7 +30,7 @@ export type Database = {
           Department?: string | null
           Email?: string | null
           "Employee ID"?: number
-          "Employee Name"?: string | null
+          Employee_Name?: string | null
           Permission?: string | null
           Role?: string | null
         }

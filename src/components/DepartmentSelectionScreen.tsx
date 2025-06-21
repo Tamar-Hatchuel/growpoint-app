@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -72,13 +71,13 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
     try {
       const { data, error } = await supabase
         .from('employees')
-        .select('Employee Name')
+        .select('Employee_Name')
         .eq('Department', department)
-        .not('Employee Name', 'is', null);
+        .not('Employee_Name', 'is', null);
 
       if (error) throw error;
 
-      const employeeNames = data.map(item => item['Employee Name']).filter(Boolean);
+      const employeeNames = data.map(item => item.Employee_Name).filter(Boolean);
       setEmployees(employeeNames);
     } catch (error) {
       console.error('Error fetching employees:', error);
@@ -124,7 +123,7 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
         .from('employees')
         .select('Role')
         .eq('Department', selectedDepartment)
-        .eq('Employee Name', selectedEmployee)
+        .eq('Employee_Name', selectedEmployee)
         .eq('Employee ID', parseInt(employeeId))
         .single();
 
