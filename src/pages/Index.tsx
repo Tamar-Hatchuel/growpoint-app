@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,8 +8,11 @@ import DepartmentSelectionScreen from '@/components/DepartmentSelectionScreen';
 import SociometricTestScreen from '@/components/SociometricTestScreen';
 import OutcomeFocusScreen from '@/components/OutcomeFocusScreen';
 import InsightsScreen from '@/components/InsightsScreen';
+import ThankYouScreen from '@/components/ThankYouScreen';
+import HRDashboard from '@/components/dashboards/HRDashboard';
+import ManagerDashboard from '@/components/dashboards/ManagerDashboard';
 
-type FlowStep = 'welcome' | 'identification' | 'department' | 'survey' | 'focus' | 'insights';
+type FlowStep = 'welcome' | 'identification' | 'department' | 'survey' | 'focus' | 'insights' | 'hr-dashboard' | 'manager-dashboard' | 'thank-you';
 
 interface UserData {
   name?: string;
@@ -16,6 +20,7 @@ interface UserData {
   department?: string;
   employee?: string;
   employeeId?: string;
+  role?: string;
   surveyResponses?: Record<number, number>;
   focusArea?: string;
 }
@@ -33,9 +38,21 @@ const Index = () => {
     setCurrentStep('department');
   };
 
-  const handleDepartmentContinue = (data: { department: string; employee: string; employeeId: string }) => {
+  const handleDepartmentContinue = (data: { department: string; employee: string; employeeId: string; role?: string }) => {
     setUserData(prev => ({ ...prev, ...data }));
     setCurrentStep('survey');
+  };
+
+  const handleNavigateToHR = () => {
+    setCurrentStep('hr-dashboard');
+  };
+
+  const handleNavigateToManager = () => {
+    setCurrentStep('manager-dashboard');
+  };
+
+  const handleNavigateToThankYou = () => {
+    setCurrentStep('thank-you');
   };
 
   const handleSurveyContinue = (responses: Record<number, number>) => {
@@ -49,7 +66,8 @@ const Index = () => {
   };
 
   const handleRestart = () => {
-    setCurrentStep('focus');
+    setUserData({});
+    setCurrentStep('welcome');
   };
 
   const goBack = (step: FlowStep) => {
@@ -71,6 +89,9 @@ const Index = () => {
         <DepartmentSelectionScreen 
           onBack={() => goBack('welcome')} 
           onContinue={handleDepartmentContinue}
+          onNavigateToHR={handleNavigateToHR}
+          onNavigateToManager={handleNavigateToManager}
+          onNavigateToThankYou={handleNavigateToThankYou}
         />
       );
     
@@ -97,6 +118,27 @@ const Index = () => {
           onRestart={handleRestart}
           focusArea={userData.focusArea || 'maintain'}
           department={userData.department || 'Team'}
+        />
+      );
+
+    case 'hr-dashboard':
+      return (
+        <HRDashboard 
+          userData={userData}
+        />
+      );
+
+    case 'manager-dashboard':
+      return (
+        <ManagerDashboard 
+          userData={userData}
+        />
+      );
+
+    case 'thank-you':
+      return (
+        <ThankYouScreen 
+          onRestart={handleRestart}
         />
       );
     

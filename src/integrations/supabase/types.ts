@@ -11,28 +11,28 @@ export type Database = {
     Tables: {
       employees: {
         Row: {
+          Department: string | null
           Email: string | null
           "Employee ID": number
           "Employee Name": string | null
           Permission: string | null
           Role: string | null
-          "Team/Department": string | null
         }
         Insert: {
+          Department?: string | null
           Email?: string | null
           "Employee ID": number
           "Employee Name"?: string | null
           Permission?: string | null
           Role?: string | null
-          "Team/Department"?: string | null
         }
         Update: {
+          Department?: string | null
           Email?: string | null
           "Employee ID"?: number
           "Employee Name"?: string | null
           Permission?: string | null
           Role?: string | null
-          "Team/Department"?: string | null
         }
         Relationships: []
       }
