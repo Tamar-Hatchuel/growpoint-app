@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, ResponsiveContainer, Legend } from 'recharts';
-import { Users, TrendingUp, AlertTriangle, Target } from 'lucide-react';
+import { Users, TrendingUp, AlertTriangle, Target, Home } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import DepartmentFilter from '../DepartmentFilter';
 import TeamHealthIndicator from '../TeamHealthIndicator';
 import FrictionAlertModal from '../FrictionAlertModal';
@@ -13,6 +14,7 @@ interface ManagerDashboardProps {
     department?: string;
     employeeId?: string;
   };
+  onRestart?: () => void;
 }
 
 // Mock data for demonstration
@@ -35,7 +37,7 @@ const teamMetrics = [
   { name: 'Team Gamma', engagement: 7.5, friction: 2.1 },
 ];
 
-const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ userData }) => {
+const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ userData, onRestart }) => {
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [dateRange, setDateRange] = useState('last-30-days');
   const [showFrictionAlert, setShowFrictionAlert] = useState(false);
@@ -69,7 +71,17 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ userData }) => {
       <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-6">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
-          <div className="text-center">
+          <div className="text-center relative">
+            {onRestart && (
+              <Button
+                onClick={onRestart}
+                variant="outline"
+                className="absolute left-0 top-0 border-growpoint-accent/20 hover:bg-growpoint-soft"
+              >
+                <Home className="w-4 h-4 mr-2" />
+                Back to Start
+              </Button>
+            )}
             <h1 className="text-4xl font-bold text-growpoint-dark mb-2">
               Manager Dashboard
             </h1>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import IdentificationScreen from '@/components/IdentificationScreen';
 import DepartmentSelectionScreen from '@/components/DepartmentSelectionScreen';
@@ -166,6 +165,7 @@ const FlowManager: React.FC<FlowManagerProps> = ({
       return (
         <ManagerDashboard 
           userData={userData}
+          onRestart={onRestart}
         />
       );
 
