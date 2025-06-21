@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -37,47 +38,39 @@
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* GrowPoint Brand Colors */
+    --growpoint-soft: 14 100% 85%;      /* #FFCDB2 */
+    --growpoint-primary: 14 100% 82%;   /* #FFB4A2 */
+    --growpoint-accent: 358 44% 73%;    /* #E5989B */
+    --growpoint-dark: 350 22% 64%;      /* #B5828C */
+    --growpoint-card-bg: 180 8% 94%;    /* #EAEFEF */
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
-
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
@@ -98,6 +91,25 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-growpoint-soft text-foreground;
+  }
+}
+
+/* Custom GrowPoint Button Styles */
+@layer components {
+  .growpoint-button {
+    @apply bg-growpoint-primary text-white font-medium px-4 py-2 rounded-lg transition-all duration-200;
+  }
+  
+  .growpoint-button:hover:not(:disabled) {
+    @apply bg-growpoint-accent;
+  }
+  
+  .growpoint-button:active:not(:disabled) {
+    @apply bg-growpoint-dark;
+  }
+  
+  .growpoint-button:disabled {
+    @apply bg-gray-400 opacity-50 cursor-not-allowed;
   }
 }

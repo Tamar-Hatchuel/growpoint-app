@@ -65,10 +65,11 @@ export default {
 				},
 				// GrowPoint Brand Colors
 				growpoint: {
-					'soft': '#FFCDB2',      // background/soft highlight
-					'primary': '#FFB4A2',   // primary buttons/icons
-					'accent': '#E5989B',    // text accents/hover states
-					'dark': '#B5828C',      // headings/dark contrast
+					'soft': 'hsl(var(--growpoint-soft))',        // #FFCDB2 - Primary background
+					'primary': 'hsl(var(--growpoint-primary))',  // #FFB4A2 - Accent buttons
+					'accent': 'hsl(var(--growpoint-accent))',    // #E5989B - Highlight/alerts
+					'dark': 'hsl(var(--growpoint-dark))',        // #B5828C - Text and header accents
+					'card-bg': 'hsl(var(--growpoint-card-bg))',  // #EAEFEF - Card backgrounds
 				}
 			},
 			borderRadius: {
