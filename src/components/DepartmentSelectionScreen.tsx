@@ -1,104 +1,30 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Building2, User, IdCard, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { ArrowLeft, Building2, User, IdCard } from 'lucide-react';
 
 interface DepartmentSelectionScreenProps {
   onBack: () => void;
   onContinue: (data: { department: string; employee: string; employeeId: string }) => void;
-  onNavigateToHR: () => void;
-  onNavigateToManager: () => void;
-  onNavigateToUser: () => void;
 }
 
-const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({ 
-  onBack, 
-  onContinue, 
-  onNavigateToHR, 
-  onNavigateToManager, 
-  onNavigateToUser 
-}) => {
-  const [departments, setDepartments] = useState<string[]>([]);
-  const [employees, setEmployees] = useState<string[]>([]);
+const departments = {
+  'Engineering': ['Alice Johnson', 'Bob Smith', 'Carol Davis', 'David Wilson', 'Eve Brown'],
+  'Marketing': ['Frank Miller', 'Grace Taylor', 'Henry Anderson', 'Ivy Thomas', 'Jack Jackson'],
+  'Sales': ['Karen White', 'Liam Harris', 'Mia Martin', 'Noah Thompson', 'Olivia Garcia'],
+  'Product': ['Paul Rodriguez', 'Quinn Lewis', 'Ruby Lee', 'Sam Walker', 'Tina Hall'],
+  'Design': ['Uma Allen', 'Victor Young', 'Wendy King', 'Xander Wright', 'Yara Lopez']
+};
+
+const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({ onBack, onContinue }) => {
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [employeeId, setEmployeeId] = useState('');
   const [employeeIdError, setEmployeeIdError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [departmentsLoading, setDepartmentsLoading] = useState(true);
-  const [employeesLoading, setEmployeesLoading] = useState(false);
-  const { toast } = useToast();
-
-  // Load departments on component mount
-  useEffect(() => {
-    loadDepartments();
-  }, []);
-
-  // Load employees when department changes
-  useEffect(() => {
-    if (selectedDepartment) {
-      loadEmployees(selectedDepartment);
-      setSelectedEmployee(''); // Reset employee selection
-    } else {
-      setEmployees([]);
-    }
-  }, [selectedDepartment]);
-
-  const loadDepartments = async () => {
-    try {
-      setDepartmentsLoading(true);
-      const { data, error } = await supabase
-        .from('employees')
-        .select('"Team/Department"')
-        .not('"Team/Department"', 'is', null);
-
-      if (error) throw error;
-
-      // Get unique departments
-      const uniqueDepartments = [...new Set(data.map(item => item['Team/Department'] as string))];
-      setDepartments(uniqueDepartments.filter(Boolean));
-    } catch (error) {
-      console.error('Error loading departments:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load departments. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setDepartmentsLoading(false);
-    }
-  };
-
-  const loadEmployees = async (department: string) => {
-    try {
-      setEmployeesLoading(true);
-      const { data, error } = await supabase
-        .from('employees')
-        .select('Employee Name')
-        .eq('"Team/Department"', department)
-        .not('Employee Name', 'is', null);
-
-      if (error) throw error;
-
-      const employeeNames = data.map(item => item['Employee Name'] as string).filter(Boolean);
-      setEmployees(employeeNames);
-    } catch (error) {
-      console.error('Error loading employees:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load employees. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setEmployeesLoading(false);
-    }
-  };
 
   const validateEmployeeId = (id: string) => {
     const regex = /^\d{5}$/;
@@ -112,72 +38,26 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
 
   const handleEmployeeIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Only allow numeric input
-    if (value === '' || /^\d+$/.test(value)) {
-      setEmployeeId(value);
-      if (value) {
-        validateEmployeeId(value);
-      } else {
-        setEmployeeIdError('');
-      }
+    setEmployeeId(value);
+    if (value) {
+      validateEmployeeId(value);
+    } else {
+      setEmployeeIdError('');
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDepartment || !selectedEmployee || !employeeId || !validateEmployeeId(employeeId)) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      // Query Supabase to verify employee and get role
-      const { data, error } = await supabase
-        .from('employees')
-        .select('Role')
-        .eq('"Team/Department"', selectedDepartment)
-        .eq('Employee Name', selectedEmployee)
-        .eq('Employee ID', parseInt(employeeId))
-        .single();
-
-      if (error || !data) {
-        toast({
-          title: "Authentication Failed",
-          description: "Invalid employee credentials. Please check your information and try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const userRole = data.Role;
-
-      // Route based on role
-      if (userRole === 'HR') {
-        onNavigateToHR();
-      } else if (userRole === 'Manager') {
-        onNavigateToManager();
-      } else if (userRole === 'User') {
-        onNavigateToUser();
-      } else {
-        // Fallback - continue with original flow
-        onContinue({
-          department: selectedDepartment,
-          employee: selectedEmployee,
-          employeeId: employeeId
-        });
-      }
-    } catch (error) {
-      console.error('Error during authentication:', error);
-      toast({
-        title: "Error",
-        description: "An error occurred during authentication. Please try again.",
-        variant: "destructive",
+    if (selectedDepartment && selectedEmployee && employeeId && validateEmployeeId(employeeId)) {
+      onContinue({
+        department: selectedDepartment,
+        employee: selectedEmployee,
+        employeeId: employeeId
       });
-    } finally {
-      setLoading(false);
     }
   };
+
+  const availableEmployees = selectedDepartment ? departments[selectedDepartment as keyof typeof departments] : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 flex items-center justify-center p-4">
@@ -186,7 +66,6 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
           variant="ghost"
           onClick={onBack}
           className="mb-6 text-growpoint-dark hover:text-growpoint-accent hover:bg-growpoint-soft/50"
-          disabled={loading}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
@@ -209,16 +88,12 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
                   <Building2 className="w-4 h-4" />
                   Department
                 </Label>
-                <Select 
-                  value={selectedDepartment} 
-                  onValueChange={setSelectedDepartment}
-                  disabled={departmentsLoading || loading}
-                >
+                <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
                   <SelectTrigger className="border-growpoint-accent/30 focus:border-growpoint-primary">
-                    <SelectValue placeholder={departmentsLoading ? "Loading departments..." : "Select your department"} />
+                    <SelectValue placeholder="Select your department" />
                   </SelectTrigger>
                   <SelectContent>
-                    {departments.map((dept) => (
+                    {Object.keys(departments).map((dept) => (
                       <SelectItem key={dept} value={dept}>{dept}</SelectItem>
                     ))}
                   </SelectContent>
@@ -233,19 +108,13 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
                 <Select 
                   value={selectedEmployee} 
                   onValueChange={setSelectedEmployee}
-                  disabled={!selectedDepartment || employeesLoading || loading}
+                  disabled={!selectedDepartment}
                 >
                   <SelectTrigger className="border-growpoint-accent/30 focus:border-growpoint-primary">
-                    <SelectValue placeholder={
-                      !selectedDepartment 
-                        ? "Select department first" 
-                        : employeesLoading 
-                        ? "Loading employees..." 
-                        : "Select your name"
-                    } />
+                    <SelectValue placeholder={selectedDepartment ? "Select your name" : "Select department first"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {employees.map((employee) => (
+                    {availableEmployees.map((employee) => (
                       <SelectItem key={employee} value={employee}>{employee}</SelectItem>
                     ))}
                   </SelectContent>
@@ -265,7 +134,6 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
                   className={`border-growpoint-accent/30 focus:border-growpoint-primary ${employeeIdError ? 'border-red-500' : ''}`}
                   maxLength={5}
                   required
-                  disabled={loading}
                 />
                 {employeeIdError && (
                   <p className="text-red-500 text-sm flex items-center gap-1">
@@ -277,16 +145,9 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
               <Button
                 type="submit"
                 className="w-full bg-growpoint-primary hover:bg-growpoint-accent text-white font-semibold py-3 rounded-lg transition-all duration-200 transform hover:scale-[1.02]"
-                disabled={!selectedDepartment || !selectedEmployee || !employeeId || !!employeeIdError || loading}
+                disabled={!selectedDepartment || !selectedEmployee || !employeeId || !!employeeIdError}
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Authenticating...
-                  </>
-                ) : (
-                  'Continue to Survey'
-                )}
+                Continue to Survey
               </Button>
             </form>
           </CardContent>

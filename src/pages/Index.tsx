@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,11 +7,8 @@ import DepartmentSelectionScreen from '@/components/DepartmentSelectionScreen';
 import SociometricTestScreen from '@/components/SociometricTestScreen';
 import OutcomeFocusScreen from '@/components/OutcomeFocusScreen';
 import InsightsScreen from '@/components/InsightsScreen';
-import HRDashboardScreen from '@/components/HRDashboardScreen';
-import ManagerDashboardScreen from '@/components/ManagerDashboardScreen';
-import ThankYouScreen from '@/components/ThankYouScreen';
 
-type FlowStep = 'welcome' | 'identification' | 'department' | 'survey' | 'focus' | 'insights' | 'hr-dashboard' | 'manager-dashboard' | 'thank-you';
+type FlowStep = 'welcome' | 'identification' | 'department' | 'survey' | 'focus' | 'insights';
 
 interface UserData {
   name?: string;
@@ -40,18 +36,6 @@ const Index = () => {
   const handleDepartmentContinue = (data: { department: string; employee: string; employeeId: string }) => {
     setUserData(prev => ({ ...prev, ...data }));
     setCurrentStep('survey');
-  };
-
-  const handleNavigateToHR = () => {
-    setCurrentStep('hr-dashboard');
-  };
-
-  const handleNavigateToManager = () => {
-    setCurrentStep('manager-dashboard');
-  };
-
-  const handleNavigateToUser = () => {
-    setCurrentStep('thank-you');
   };
 
   const handleSurveyContinue = (responses: Record<number, number>) => {
@@ -87,9 +71,6 @@ const Index = () => {
         <DepartmentSelectionScreen 
           onBack={() => goBack('welcome')} 
           onContinue={handleDepartmentContinue}
-          onNavigateToHR={handleNavigateToHR}
-          onNavigateToManager={handleNavigateToManager}
-          onNavigateToUser={handleNavigateToUser}
         />
       );
     
@@ -116,27 +97,6 @@ const Index = () => {
           onRestart={handleRestart}
           focusArea={userData.focusArea || 'maintain'}
           department={userData.department || 'Team'}
-        />
-      );
-    
-    case 'hr-dashboard':
-      return (
-        <HRDashboardScreen 
-          onBack={() => goBack('welcome')} 
-        />
-      );
-    
-    case 'manager-dashboard':
-      return (
-        <ManagerDashboardScreen 
-          onBack={() => goBack('welcome')} 
-        />
-      );
-    
-    case 'thank-you':
-      return (
-        <ThankYouScreen 
-          onBack={() => goBack('welcome')} 
         />
       );
     
