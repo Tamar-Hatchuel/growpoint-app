@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Building2, User, IdCard, Loader2 } from 'lucide-react';
+import { ArrowLeft, Building2, User, IdCard, Loader2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -23,6 +23,7 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({ o
   const [employeeIdError, setEmployeeIdError] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Fetch departments on component mount
@@ -41,19 +42,52 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({ o
   }, [selectedDepartment]);
 
   const fetchDepartments = async () => {
+    console.log('🔍 Starting fetchDepartments...');
+    setLoading(true);
+    setFetchError(null);
+    
     try {
+      console.log('📡 Making Supabase query for departments...');
       const { data, error } = await supabase
         .from('employees')
         .select('Team/Department')
         .not('Team/Department', 'is', null);
 
-      if (error) throw error;
+      console.log('📊 Raw Supabase response:', { data, error });
 
-      // Get unique departments
-      const uniqueDepartments = [...new Set(data.map(item => item['Team/Department']))].filter(Boolean);
+      if (error) {
+        console.error('❌ Supabase error:', error);
+        throw error;
+      }
+
+      if (!data) {
+        console.warn('⚠️ No data returned from Supabase');
+        setDepartments([]);
+        setFetchError('No data found');
+        return;
+      }
+
+      console.log(`📝 Processing ${data.length} records...`);
+      
+      // Get unique departments and filter out null/empty values
+      const allDepartments = data.map(item => item['Team/Department']).filter(Boolean);
+      console.log('🏢 All departments (before unique):', allDepartments);
+      
+      const uniqueDepartments = [...new Set(allDepartments)];
+      console.log('🎯 Unique departments:', uniqueDepartments);
+      
       setDepartments(uniqueDepartments);
+      
+      if (uniqueDepartments.length === 0) {
+        setFetchError('No departments found in database');
+        console.warn('⚠️ No departments found after processing');
+      } else {
+        console.log(`✅ Successfully loaded ${uniqueDepartments.length} departments`);
+      }
+      
     } catch (error) {
-      console.error('Error fetching departments:', error);
+      console.error('💥 Error in fetchDepartments:', error);
+      setFetchError(`Failed to load departments: ${error instanceof Error ? error.message : 'Unknown error'}`);
       toast({
         title: "Error",
         description: "Failed to load departments. Please try again.",
@@ -61,10 +95,12 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({ o
       });
     } finally {
       setLoading(false);
+      console.log('🏁 fetchDepartments completed, loading set to false');
     }
   };
 
   const fetchEmployees = async (department: string) => {
+    console.log(`👥 Fetching employees for department: ${department}`);
     try {
       const { data, error } = await supabase
         .from('employees')
@@ -72,12 +108,15 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({ o
         .eq('Team/Department', department)
         .not('Employee Name', 'is', null);
 
+      console.log(`📊 Employees query result:`, { data, error });
+
       if (error) throw error;
 
-      const employeeNames = data.map(item => item['Employee Name']).filter(Boolean);
+      const employeeNames = data?.map(item => item['Employee Name']).filter(Boolean) || [];
+      console.log(`👤 Found ${employeeNames.length} employees:`, employeeNames);
       setEmployees(employeeNames);
     } catch (error) {
-      console.error('Error fetching employees:', error);
+      console.error('💥 Error fetching employees:', error);
       toast({
         title: "Error",
         description: "Failed to load employees. Please try again.",
@@ -157,6 +196,15 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({ o
     }
   };
 
+  // Debug render state
+  console.log('🎨 Render state:', { 
+    loading, 
+    departmentsCount: departments.length, 
+    departments, 
+    fetchError,
+    selectedDepartment 
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 flex items-center justify-center p-4">
@@ -193,22 +241,55 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({ o
           </CardHeader>
           
           <CardContent>
+            {fetchError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
+                <AlertCircle className="w-4 h-4" />
+                <span className="text-sm">{fetchError}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={fetchDepartments}
+                  className="ml-auto text-red-700 hover:text-red-800"
+                >
+                  Retry
+                </Button>
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label className="text-growpoint-dark font-medium flex items-center gap-2">
                   <Building2 className="w-4 h-4" />
                   Department
+                  <span className="text-xs text-gray-500">({departments.length} available)</span>
                 </Label>
                 <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-                  <SelectTrigger className="border-growpoint-accent/30 focus:border-growpoint-primary">
-                    <SelectValue placeholder="Select your department" />
+                  <SelectTrigger className="border-growpoint-accent/30 focus:border-growpoint-primary bg-white">
+                    <SelectValue placeholder={
+                      departments.length === 0 
+                        ? "No departments found" 
+                        : "Select your department"
+                    } />
                   </SelectTrigger>
-                  <SelectContent>
-                    {departments.map((dept) => (
-                      <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                    ))}
+                  <SelectContent className="bg-white border shadow-lg max-h-60 overflow-y-auto z-50">
+                    {departments.length === 0 ? (
+                      <div className="p-3 text-center text-gray-500">
+                        No departments available
+                      </div>
+                    ) : (
+                      departments.map((dept) => (
+                        <SelectItem key={dept} value={dept} className="hover:bg-gray-50">
+                          {dept}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
+                {departments.length === 0 && !loading && (
+                  <p className="text-xs text-gray-500">
+                    Debug: {departments.length} departments loaded
+                  </p>
+                )}
               </div>
               
               <div className="space-y-2">
@@ -221,12 +302,14 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({ o
                   onValueChange={setSelectedEmployee}
                   disabled={!selectedDepartment}
                 >
-                  <SelectTrigger className="border-growpoint-accent/30 focus:border-growpoint-primary">
+                  <SelectTrigger className="border-growpoint-accent/30 focus:border-growpoint-primary bg-white">
                     <SelectValue placeholder={selectedDepartment ? "Select your name" : "Select department first"} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white border shadow-lg max-h-60 overflow-y-auto z-50">
                     {employees.map((employee) => (
-                      <SelectItem key={employee} value={employee}>{employee}</SelectItem>
+                      <SelectItem key={employee} value={employee} className="hover:bg-gray-50">
+                        {employee}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
