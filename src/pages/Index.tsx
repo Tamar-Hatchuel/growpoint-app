@@ -114,7 +114,7 @@ const Index = () => {
             <div className="text-center mb-12 animate-fade-in">
               <div className="flex items-center justify-center mb-6">
                 <div className="bg-gradient-to-br from-growpoint-primary to-growpoint-accent p-4 rounded-2xl shadow-lg">
-                  <TrendingUp className="w-12 h-12 text-white" />
+                  <img src="/lovable-uploads/c3fcdded-87c5-4a78-b39e-2094a897384e.png" alt="GrowPoint" className="w-12 h-12" />
                 </div>
               </div>
               
