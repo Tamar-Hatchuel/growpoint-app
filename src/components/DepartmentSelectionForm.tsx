@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import DepartmentSelector from './DepartmentSelector';
 import EmployeeSelector from './EmployeeSelector';
 import EmployeeIdInput from './EmployeeIdInput';
@@ -23,7 +22,6 @@ const DepartmentSelectionForm: React.FC<DepartmentSelectionFormProps> = ({ onCon
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const { toast } = useToast();
 
   // Fetch departments on component mount
   useEffect(() => {
@@ -41,11 +39,7 @@ const DepartmentSelectionForm: React.FC<DepartmentSelectionFormProps> = ({ onCon
   }, [selectedDepartment]);
 
   const showErrorToast = (description: string) => {
-    toast({
-      title: "Error",
-      description,
-      variant: "destructive" as const,
-    });
+    toast.error(description);
   };
 
   const fetchDepartments = async () => {
@@ -176,11 +170,7 @@ const DepartmentSelectionForm: React.FC<DepartmentSelectionFormProps> = ({ onCon
         .single();
 
       if (error || !data) {
-        toast({
-          title: "Invalid Credentials",
-          description: "No matching employee found. Please check your details.",
-          variant: "destructive" as const,
-        });
+        toast.error("No matching employee found. Please check your details.");
         return;
       }
 
