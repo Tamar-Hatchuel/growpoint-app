@@ -55,8 +55,8 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
       setDepartmentsLoading(true);
       const { data, error } = await supabase
         .from('employees')
-        .select('Team/Department')
-        .not('Team/Department', 'is', null);
+        .select('"Team/Department"')
+        .not('"Team/Department"', 'is', null);
 
       if (error) throw error;
 
@@ -81,7 +81,7 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
       const { data, error } = await supabase
         .from('employees')
         .select('Employee Name')
-        .eq('Team/Department', department)
+        .eq('"Team/Department"', department)
         .not('Employee Name', 'is', null);
 
       if (error) throw error;
@@ -136,7 +136,7 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
       const { data, error } = await supabase
         .from('employees')
         .select('Role')
-        .eq('Team/Department', selectedDepartment)
+        .eq('"Team/Department"', selectedDepartment)
         .eq('Employee Name', selectedEmployee)
         .eq('Employee ID', parseInt(employeeId))
         .single();
