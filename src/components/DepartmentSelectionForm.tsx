@@ -147,7 +147,15 @@ const DepartmentSelectionForm: React.FC<DepartmentSelectionFormProps> = ({ onCon
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleDepartmentChange = (department: string) => {
+    setSelectedDepartment(department);
+  };
+
+  const handleEmployeeChange = (employee: string) => {
+    setSelectedEmployee(employee);
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (!selectedDepartment || !selectedEmployee || !employeeId || !validateEmployeeId(employeeId)) {
@@ -246,14 +254,14 @@ const DepartmentSelectionForm: React.FC<DepartmentSelectionFormProps> = ({ onCon
           <DepartmentSelector
             departments={departments}
             selectedDepartment={selectedDepartment}
-            onDepartmentChange={setSelectedDepartment}
+            onDepartmentChange={handleDepartmentChange}
             loading={loading}
           />
           
           <EmployeeSelector
             employees={employees}
             selectedEmployee={selectedEmployee}
-            onEmployeeChange={setSelectedEmployee}
+            onEmployeeChange={handleEmployeeChange}
             selectedDepartment={selectedDepartment}
           />
           
