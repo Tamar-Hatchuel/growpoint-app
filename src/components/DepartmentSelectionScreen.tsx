@@ -1,12 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Building2, User, IdCard } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { ArrowLeft } from 'lucide-react';
+import { useEmployeeData } from '@/hooks/useEmployeeData';
+import { useEmployeeAuth } from '@/hooks/useEmployeeAuth';
+import { validateEmployeeId } from '@/utils/employeeValidation';
+import DepartmentSelector from '@/components/forms/DepartmentSelector';
+import EmployeeSelector from '@/components/forms/EmployeeSelector';
+import EmployeeIdInput from '@/components/forms/EmployeeIdInput';
 
 interface DepartmentSelectionScreenProps {
   onBack: () => void;
@@ -27,19 +29,13 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
   onNavigateToHRChoice,
   onNavigateToAdminChoice
 }) => {
-  const [departments, setDepartments] = useState<string[]>([]);
-  const [employees, setEmployees] = useState<string[]>([]);
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [employeeId, setEmployeeId] = useState('');
   const [employeeIdError, setEmployeeIdError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
 
-  // Fetch departments on component mount
-  useEffect(() => {
-    fetchDepartments();
-  }, []);
+  const { departments, employees, fetchEmployees, setEmployees } = useEmployeeData();
+  const { authenticateUser, isLoading } = useEmployeeAuth();
 
   // Fetch employees when department changes
   useEffect(() => {
@@ -49,65 +45,13 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
     }
   }, [selectedDepartment]);
 
-  const fetchDepartments = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('employees')
-        .select('Department')
-        .not('Department', 'is', null);
-
-      if (error) throw error;
-
-      // Get unique departments
-      const uniqueDepartments = [...new Set(data.map(item => item.Department))].filter(Boolean);
-      setDepartments(uniqueDepartments);
-    } catch (error) {
-      console.error('Error fetching departments:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load departments. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const fetchEmployees = async (department: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('employees')
-        .select('Employee_Name')
-        .eq('Department', department)
-        .not('Employee_Name', 'is', null);
-
-      if (error) throw error;
-
-      const employeeNames = data.map(item => item.Employee_Name).filter(Boolean);
-      setEmployees(employeeNames);
-    } catch (error) {
-      console.error('Error fetching employees:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load employees. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const validateEmployeeId = (id: string) => {
-    const regex = /^\d{5}$/;
-    if (!regex.test(id)) {
-      setEmployeeIdError('Employee ID must be exactly 5 digits');
-      return false;
-    }
-    setEmployeeIdError('');
-    return true;
-  };
-
   const handleEmployeeIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setEmployeeId(value);
+    
     if (value) {
-      validateEmployeeId(value);
+      const validation = validateEmployeeId(value);
+      setEmployeeIdError(validation.error);
     } else {
       setEmployeeIdError('');
     }
@@ -115,76 +59,23 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDepartment || !selectedEmployee || !employeeId || !validateEmployeeId(employeeId)) {
+    const validation = validateEmployeeId(employeeId);
+    
+    if (!selectedDepartment || !selectedEmployee || !employeeId || !validation.isValid) {
       return;
     }
 
-    setIsLoading(true);
-    
-    try {
-      // Query to fetch Permission and Department to verify employee details
-      const { data, error } = await supabase
-        .from('employees')
-        .select('Permission, Department')
-        .eq('Department', selectedDepartment)
-        .eq('Employee_Name', selectedEmployee)
-        .eq('Employee ID', parseInt(employeeId))
-        .single();
-
-      if (error || !data) {
-        toast({
-          title: "Authentication Failed",
-          description: "Invalid employee details. Please check your information and try again.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      const userPermission = data.Permission;
-      const userDepartment = data.Department;
-      
-      // Store user data for use in other screens
-      const userData = {
-        department: selectedDepartment,
-        employee: selectedEmployee,
-        employeeId: employeeId,
-        permission: userPermission,
-        userDepartment: userDepartment
-      };
-
-      console.log('User authenticated with permission:', userPermission);
-
-      // Permission-based navigation
-      switch (userPermission) {
-        case 'user':
-          // Go directly to questionnaire
-          onContinue(userData);
-          break;
-        case 'HR':
-          // Show choice screen for HR users
-          onNavigateToHRChoice(userData);
-          break;
-        case 'Admin':
-          // Show choice screen for Admin users  
-          onNavigateToAdminChoice(userData);
-          break;
-        default:
-          // Fallback to questionnaire for unknown permissions
-          onContinue(userData);
-      }
-
-    } catch (error) {
-      console.error('Error authenticating user:', error);
-      toast({
-        title: "Error",
-        description: "Authentication failed. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    await authenticateUser({
+      selectedDepartment,
+      selectedEmployee,
+      employeeId,
+      onContinue,
+      onNavigateToHRChoice,
+      onNavigateToAdminChoice
+    });
   };
+
+  const isFormValid = selectedDepartment && selectedEmployee && employeeId && !employeeIdError;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 flex items-center justify-center p-4">
@@ -210,69 +101,29 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
           
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label className="text-growpoint-dark font-medium flex items-center gap-2">
-                  <Building2 className="w-4 h-4" />
-                  Select Your Department
-                </Label>
-                <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-                  <SelectTrigger className="border-growpoint-accent/30 focus:border-growpoint-primary">
-                    <SelectValue placeholder="Select your department" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {departments.map((dept) => (
-                      <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <DepartmentSelector
+                departments={departments}
+                selectedDepartment={selectedDepartment}
+                onDepartmentChange={setSelectedDepartment}
+              />
               
-              <div className="space-y-2">
-                <Label className="text-growpoint-dark font-medium flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  Select Your Name
-                </Label>
-                <Select 
-                  value={selectedEmployee} 
-                  onValueChange={setSelectedEmployee}
-                  disabled={!selectedDepartment}
-                >
-                  <SelectTrigger className="border-growpoint-accent/30 focus:border-growpoint-primary">
-                    <SelectValue placeholder={selectedDepartment ? "Select your name" : "Select department first"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {employees.map((employee) => (
-                      <SelectItem key={employee} value={employee}>{employee}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <EmployeeSelector
+                employees={employees}
+                selectedEmployee={selectedEmployee}
+                selectedDepartment={selectedDepartment}
+                onEmployeeChange={setSelectedEmployee}
+              />
               
-              <div className="space-y-2">
-                <Label className="text-growpoint-dark font-medium flex items-center gap-2">
-                  <IdCard className="w-4 h-4" />
-                  Enter Your 5-Digit Employee ID
-                </Label>
-                <Input
-                  type="text"
-                  placeholder="Enter 5-digit Employee ID"
-                  value={employeeId}
-                  onChange={handleEmployeeIdChange}
-                  className={`border-growpoint-accent/30 focus:border-growpoint-primary ${employeeIdError ? 'border-red-500' : ''}`}
-                  maxLength={5}
-                  required
-                />
-                {employeeIdError && (
-                  <p className="text-red-500 text-sm flex items-center gap-1">
-                    ❌ {employeeIdError}
-                  </p>
-                )}
-              </div>
+              <EmployeeIdInput
+                employeeId={employeeId}
+                employeeIdError={employeeIdError}
+                onEmployeeIdChange={handleEmployeeIdChange}
+              />
               
               <Button
                 type="submit"
                 className="w-full bg-growpoint-primary hover:bg-growpoint-accent text-white font-semibold py-3 rounded-lg transition-all duration-200 transform hover:scale-[1.02]"
-                disabled={!selectedDepartment || !selectedEmployee || !employeeId || !!employeeIdError || isLoading}
+                disabled={!isFormValid || isLoading}
               >
                 {isLoading ? 'Authenticating...' : 'Continue'}
               </Button>
