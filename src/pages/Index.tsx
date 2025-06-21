@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,8 +8,11 @@ import DepartmentSelectionScreen from '@/components/DepartmentSelectionScreen';
 import SociometricTestScreen from '@/components/SociometricTestScreen';
 import OutcomeFocusScreen from '@/components/OutcomeFocusScreen';
 import InsightsScreen from '@/components/InsightsScreen';
+import ThankYouScreen from '@/components/ThankYouScreen';
+import ManagerDashboard from '@/components/dashboards/ManagerDashboard';
+import HRDashboard from '@/components/dashboards/HRDashboard';
 
-type FlowStep = 'welcome' | 'identification' | 'department' | 'survey' | 'focus' | 'insights';
+type FlowStep = 'welcome' | 'identification' | 'department' | 'survey' | 'focus' | 'insights' | 'hr-dashboard' | 'manager-dashboard' | 'thank-you';
 
 interface UserData {
   name?: string;
@@ -16,6 +20,7 @@ interface UserData {
   department?: string;
   employee?: string;
   employeeId?: string;
+  role?: string;
   surveyResponses?: Record<number, number>;
   focusArea?: string;
 }
@@ -33,9 +38,22 @@ const Index = () => {
     setCurrentStep('department');
   };
 
-  const handleDepartmentContinue = (data: { department: string; employee: string; employeeId: string }) => {
+  const handleDepartmentContinue = (data: { department: string; employee: string; employeeId: string; role: string }) => {
     setUserData(prev => ({ ...prev, ...data }));
-    setCurrentStep('survey');
+    
+    // Route based on role
+    switch (data.role?.toLowerCase()) {
+      case 'hr':
+        setCurrentStep('hr-dashboard');
+        break;
+      case 'manager':
+        setCurrentStep('manager-dashboard');
+        break;
+      case 'user':
+      default:
+        setCurrentStep('thank-you');
+        break;
+    }
   };
 
   const handleSurveyContinue = (responses: Record<number, number>) => {
@@ -49,7 +67,7 @@ const Index = () => {
   };
 
   const handleRestart = () => {
-    setCurrentStep('focus');
+    setCurrentStep('department');
   };
 
   const goBack = (step: FlowStep) => {
@@ -97,6 +115,37 @@ const Index = () => {
           onRestart={handleRestart}
           focusArea={userData.focusArea || 'maintain'}
           department={userData.department || 'Team'}
+        />
+      );
+    
+    case 'hr-dashboard':
+      return (
+        <HRDashboard 
+          userData={{
+            name: userData.employee,
+            department: userData.department,
+            employeeId: userData.employeeId
+          }}
+        />
+      );
+    
+    case 'manager-dashboard':
+      return (
+        <ManagerDashboard 
+          userData={{
+            name: userData.employee,
+            department: userData.department,
+            employeeId: userData.employeeId
+          }}
+        />
+      );
+    
+    case 'thank-you':
+      return (
+        <ThankYouScreen 
+          onBack={() => goBack('department')} 
+          onRestart={handleRestart}
+          userName={userData.employee}
         />
       );
     
@@ -175,7 +224,6 @@ const Index = () => {
               </Button>
             </div>
 
-            {/* Subtitle */}
             <p className="text-growpoint-dark/60 text-center mt-6 max-w-md animate-fade-in" style={{ animationDelay: '1s' }}>
               Join teams worldwide in building stronger, more effective collaboration
             </p>

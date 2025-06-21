@@ -1,30 +1,90 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Building2, User, IdCard } from 'lucide-react';
+import { ArrowLeft, Building2, User, IdCard, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface DepartmentSelectionScreenProps {
   onBack: () => void;
-  onContinue: (data: { department: string; employee: string; employeeId: string }) => void;
+  onContinue: (data: { department: string; employee: string; employeeId: string; role: string }) => void;
 }
 
-const departments = {
-  'Engineering': ['Alice Johnson', 'Bob Smith', 'Carol Davis', 'David Wilson', 'Eve Brown'],
-  'Marketing': ['Frank Miller', 'Grace Taylor', 'Henry Anderson', 'Ivy Thomas', 'Jack Jackson'],
-  'Sales': ['Karen White', 'Liam Harris', 'Mia Martin', 'Noah Thompson', 'Olivia Garcia'],
-  'Product': ['Paul Rodriguez', 'Quinn Lewis', 'Ruby Lee', 'Sam Walker', 'Tina Hall'],
-  'Design': ['Uma Allen', 'Victor Young', 'Wendy King', 'Xander Wright', 'Yara Lopez']
-};
-
 const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({ onBack, onContinue }) => {
+  const [departments, setDepartments] = useState<string[]>([]);
+  const [employees, setEmployees] = useState<string[]>([]);
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState('');
   const [employeeId, setEmployeeId] = useState('');
   const [employeeIdError, setEmployeeIdError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  // Fetch departments on component mount
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  // Fetch employees when department changes
+  useEffect(() => {
+    if (selectedDepartment) {
+      fetchEmployees(selectedDepartment);
+      setSelectedEmployee(''); // Reset employee selection
+    } else {
+      setEmployees([]);
+    }
+  }, [selectedDepartment]);
+
+  const fetchDepartments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('employees')
+        .select('Team/Department')
+        .not('Team/Department', 'is', null);
+
+      if (error) throw error;
+
+      // Get unique departments
+      const uniqueDepartments = [...new Set(data.map(item => item['Team/Department']))].filter(Boolean);
+      setDepartments(uniqueDepartments);
+    } catch (error) {
+      console.error('Error fetching departments:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load departments. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchEmployees = async (department: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('employees')
+        .select('Employee Name')
+        .eq('Team/Department', department)
+        .not('Employee Name', 'is', null);
+
+      if (error) throw error;
+
+      const employeeNames = data.map(item => item['Employee Name']).filter(Boolean);
+      setEmployees(employeeNames);
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load employees. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const validateEmployeeId = (id: string) => {
     const regex = /^\d{5}$/;
@@ -38,26 +98,77 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({ o
 
   const handleEmployeeIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setEmployeeId(value);
-    if (value) {
-      validateEmployeeId(value);
-    } else {
-      setEmployeeIdError('');
+    // Only allow digits
+    if (value === '' || /^\d+$/.test(value)) {
+      setEmployeeId(value);
+      if (value) {
+        validateEmployeeId(value);
+      } else {
+        setEmployeeIdError('');
+      }
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedDepartment && selectedEmployee && employeeId && validateEmployeeId(employeeId)) {
+    
+    if (!selectedDepartment || !selectedEmployee || !employeeId || !validateEmployeeId(employeeId)) {
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      // Query Supabase to find the user and get their role
+      const { data, error } = await supabase
+        .from('employees')
+        .select('Role')
+        .eq('Team/Department', selectedDepartment)
+        .eq('Employee Name', selectedEmployee)
+        .eq('Employee ID', parseInt(employeeId))
+        .single();
+
+      if (error || !data) {
+        toast({
+          title: "Invalid Credentials",
+          description: "No matching employee found. Please check your details.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Successfully found user, proceed with their role
       onContinue({
         department: selectedDepartment,
         employee: selectedEmployee,
-        employeeId: employeeId
+        employeeId: employeeId,
+        role: data.Role
       });
+
+    } catch (error) {
+      console.error('Error verifying employee:', error);
+      toast({
+        title: "Error",
+        description: "Failed to verify employee details. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const availableEmployees = selectedDepartment ? departments[selectedDepartment as keyof typeof departments] : [];
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 flex items-center justify-center p-4">
+        <Card className="border-growpoint-accent/20 shadow-lg">
+          <CardContent className="p-8 text-center">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-growpoint-primary" />
+            <p className="text-growpoint-dark">Loading departments...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 flex items-center justify-center p-4">
@@ -93,7 +204,7 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({ o
                     <SelectValue placeholder="Select your department" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.keys(departments).map((dept) => (
+                    {departments.map((dept) => (
                       <SelectItem key={dept} value={dept}>{dept}</SelectItem>
                     ))}
                   </SelectContent>
@@ -114,7 +225,7 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({ o
                     <SelectValue placeholder={selectedDepartment ? "Select your name" : "Select department first"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {availableEmployees.map((employee) => (
+                    {employees.map((employee) => (
                       <SelectItem key={employee} value={employee}>{employee}</SelectItem>
                     ))}
                   </SelectContent>
@@ -145,9 +256,16 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({ o
               <Button
                 type="submit"
                 className="w-full bg-growpoint-primary hover:bg-growpoint-accent text-white font-semibold py-3 rounded-lg transition-all duration-200 transform hover:scale-[1.02]"
-                disabled={!selectedDepartment || !selectedEmployee || !employeeId || !!employeeIdError}
+                disabled={!selectedDepartment || !selectedEmployee || !employeeId || !!employeeIdError || submitting}
               >
-                Continue to Survey
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  'Continue'
+                )}
               </Button>
             </form>
           </CardContent>
