@@ -1,10 +1,11 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp, Users, Target, BarChart3 } from 'lucide-react';
 import IdentificationScreen from '@/components/IdentificationScreen';
 import DepartmentSelectionScreen from '@/components/DepartmentSelectionScreen';
+import HRChoiceScreen from '@/components/HRChoiceScreen';
+import AdminChoiceScreen from '@/components/AdminChoiceScreen';
 import SociometricTestScreen from '@/components/SociometricTestScreen';
 import OutcomeFocusScreen from '@/components/OutcomeFocusScreen';
 import InsightsScreen from '@/components/InsightsScreen';
@@ -12,7 +13,7 @@ import ThankYouScreen from '@/components/ThankYouScreen';
 import HRDashboard from '@/components/dashboards/HRDashboard';
 import ManagerDashboard from '@/components/dashboards/ManagerDashboard';
 
-type FlowStep = 'welcome' | 'identification' | 'department' | 'survey' | 'focus' | 'insights' | 'hr-dashboard' | 'manager-dashboard' | 'thank-you';
+type FlowStep = 'welcome' | 'identification' | 'department' | 'hr-choice' | 'admin-choice' | 'survey' | 'focus' | 'insights' | 'hr-dashboard' | 'manager-dashboard' | 'thank-you';
 
 interface UserData {
   name?: string;
@@ -21,6 +22,8 @@ interface UserData {
   employee?: string;
   employeeId?: string;
   role?: string;
+  permission?: string;
+  userDepartment?: string;
   surveyResponses?: Record<number, number>;
   focusArea?: string;
 }
@@ -38,9 +41,19 @@ const Index = () => {
     setCurrentStep('department');
   };
 
-  const handleDepartmentContinue = (data: { department: string; employee: string; employeeId: string; role?: string }) => {
+  const handleDepartmentContinue = (data: { department: string; employee: string; employeeId: string; permission?: string; userDepartment?: string }) => {
     setUserData(prev => ({ ...prev, ...data }));
     setCurrentStep('survey');
+  };
+
+  const handleNavigateToHRChoice = (data: any) => {
+    setUserData(prev => ({ ...prev, ...data }));
+    setCurrentStep('hr-choice');
+  };
+
+  const handleNavigateToAdminChoice = (data: any) => {
+    setUserData(prev => ({ ...prev, ...data }));
+    setCurrentStep('admin-choice');
   };
 
   const handleNavigateToHR = () => {
@@ -92,6 +105,28 @@ const Index = () => {
           onNavigateToHR={handleNavigateToHR}
           onNavigateToManager={handleNavigateToManager}
           onNavigateToThankYou={handleNavigateToThankYou}
+          onNavigateToHRChoice={handleNavigateToHRChoice}
+          onNavigateToAdminChoice={handleNavigateToAdminChoice}
+        />
+      );
+
+    case 'hr-choice':
+      return (
+        <HRChoiceScreen 
+          onBack={() => goBack('department')} 
+          onFillQuestionnaire={handleDepartmentContinue}
+          onViewDashboard={handleNavigateToHR}
+          userData={userData}
+        />
+      );
+
+    case 'admin-choice':
+      return (
+        <AdminChoiceScreen 
+          onBack={() => goBack('department')} 
+          onFillQuestionnaire={handleDepartmentContinue}
+          onViewDashboard={handleNavigateToManager}
+          userData={userData}
         />
       );
     

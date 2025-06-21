@@ -14,6 +14,8 @@ interface DepartmentSelectionScreenProps {
   onNavigateToHR: () => void;
   onNavigateToManager: () => void;
   onNavigateToThankYou: () => void;
+  onNavigateToHRChoice: (userData: any) => void;
+  onNavigateToAdminChoice: (userData: any) => void;
 }
 
 const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({ 
@@ -21,7 +23,9 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
   onContinue, 
   onNavigateToHR, 
   onNavigateToManager, 
-  onNavigateToThankYou 
+  onNavigateToThankYou,
+  onNavigateToHRChoice,
+  onNavigateToAdminChoice
 }) => {
   const [departments, setDepartments] = useState<string[]>([]);
   const [employees, setEmployees] = useState<string[]>([]);
@@ -118,10 +122,10 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
     setIsLoading(true);
     
     try {
-      // Query to fetch role and verify employee details
+      // Query to fetch Permission and Department to verify employee details
       const { data, error } = await supabase
         .from('employees')
-        .select('Role')
+        .select('Permission, Department')
         .eq('Department', selectedDepartment)
         .eq('Employee_Name', selectedEmployee)
         .eq('Employee ID', parseInt(employeeId))
@@ -137,29 +141,36 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
         return;
       }
 
-      const userRole = data.Role;
+      const userPermission = data.Permission;
+      const userDepartment = data.Department;
       
-      // Store user data for potential use in other screens
+      // Store user data for use in other screens
       const userData = {
         department: selectedDepartment,
         employee: selectedEmployee,
         employeeId: employeeId,
-        role: userRole
+        permission: userPermission,
+        userDepartment: userDepartment
       };
 
-      // Role-based navigation
-      switch (userRole) {
+      console.log('User authenticated with permission:', userPermission);
+
+      // Permission-based navigation
+      switch (userPermission) {
+        case 'user':
+          // Go directly to questionnaire
+          onContinue(userData);
+          break;
         case 'HR':
-          onNavigateToHR();
+          // Show choice screen for HR users
+          onNavigateToHRChoice(userData);
           break;
-        case 'Manager':
-          onNavigateToManager();
-          break;
-        case 'User':
-          onNavigateToThankYou();
+        case 'Admin':
+          // Show choice screen for Admin users  
+          onNavigateToAdminChoice(userData);
           break;
         default:
-          // Fallback to continue with survey if role doesn't match expected values
+          // Fallback to questionnaire for unknown permissions
           onContinue(userData);
       }
 
