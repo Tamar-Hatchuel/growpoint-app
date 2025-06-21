@@ -40,6 +40,14 @@ const DepartmentSelectionForm: React.FC<DepartmentSelectionFormProps> = ({ onCon
     }
   }, [selectedDepartment]);
 
+  const showErrorToast = (description: string) => {
+    toast({
+      title: "Error",
+      description,
+      variant: "destructive" as const,
+    });
+  };
+
   const fetchDepartments = async () => {
     console.log('🔍 Starting fetchDepartments...');
     setLoading(true);
@@ -86,12 +94,9 @@ const DepartmentSelectionForm: React.FC<DepartmentSelectionFormProps> = ({ onCon
       
     } catch (error) {
       console.error('💥 Error in fetchDepartments:', error);
-      setFetchError(`Failed to load departments: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      toast({
-        title: "Error",
-        description: "Failed to load departments. Please try again.",
-        variant: "destructive",
-      });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setFetchError(`Failed to load departments: ${errorMessage}`);
+      showErrorToast("Failed to load departments. Please try again.");
     } finally {
       setLoading(false);
       console.log('🏁 fetchDepartments completed, loading set to false');
@@ -116,15 +121,11 @@ const DepartmentSelectionForm: React.FC<DepartmentSelectionFormProps> = ({ onCon
       setEmployees(employeeNames);
     } catch (error) {
       console.error('💥 Error fetching employees:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load employees. Please try again.",
-        variant: "destructive",
-      });
+      showErrorToast("Failed to load employees. Please try again.");
     }
   };
 
-  const validateEmployeeId = (id: string) => {
+  const validateEmployeeId = (id: string): boolean => {
     const regex = /^\d{5}$/;
     if (!regex.test(id)) {
       setEmployeeIdError('Employee ID must be exactly 5 digits');
@@ -178,7 +179,7 @@ const DepartmentSelectionForm: React.FC<DepartmentSelectionFormProps> = ({ onCon
         toast({
           title: "Invalid Credentials",
           description: "No matching employee found. Please check your details.",
-          variant: "destructive",
+          variant: "destructive" as const,
         });
         return;
       }
@@ -193,11 +194,7 @@ const DepartmentSelectionForm: React.FC<DepartmentSelectionFormProps> = ({ onCon
 
     } catch (error) {
       console.error('Error verifying employee:', error);
-      toast({
-        title: "Error",
-        description: "Failed to verify employee details. Please try again.",
-        variant: "destructive",
-      });
+      showErrorToast("Failed to verify employee details. Please try again.");
     } finally {
       setSubmitting(false);
     }
