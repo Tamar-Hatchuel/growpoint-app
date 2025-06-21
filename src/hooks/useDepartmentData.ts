@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 
 export const useDepartmentData = () => {
   const [departments, setDepartments] = useState<string[]>([]);
@@ -56,7 +55,6 @@ export const useDepartmentData = () => {
       console.error('💥 Error in fetchDepartments:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setFetchError(`Failed to load departments: ${errorMessage}`);
-      toast.error("Failed to load departments. Please try again.");
     } finally {
       setLoading(false);
       console.log('🏁 fetchDepartments completed, loading set to false');
@@ -81,7 +79,7 @@ export const useDepartmentData = () => {
       setEmployees(employeeNames);
     } catch (error) {
       console.error('💥 Error fetching employees:', error);
-      toast.error("Failed to load employees. Please try again.");
+      // Don't set error state here, just log it
     }
   };
 

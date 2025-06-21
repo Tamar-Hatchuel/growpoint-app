@@ -1,6 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 
 export interface EmployeeVerificationData {
   department: string;
@@ -9,11 +8,17 @@ export interface EmployeeVerificationData {
   role: string;
 }
 
+export interface EmployeeVerificationResult {
+  success: boolean;
+  data?: EmployeeVerificationData;
+  error?: string;
+}
+
 export const verifyEmployee = async (
   selectedDepartment: string,
   selectedEmployee: string,
   employeeId: string
-): Promise<EmployeeVerificationData | null> => {
+): Promise<EmployeeVerificationResult> => {
   try {
     const { data, error } = await supabase
       .from('employees')
@@ -24,20 +29,28 @@ export const verifyEmployee = async (
       .single();
 
     if (error || !data) {
-      toast.error("No matching employee found. Please check your details.");
-      return null;
+      console.error('Employee verification failed:', error);
+      return {
+        success: false,
+        error: "No matching employee found. Please check your details."
+      };
     }
 
     return {
-      department: selectedDepartment,
-      employee: selectedEmployee,
-      employeeId: employeeId,
-      role: data.Role
+      success: true,
+      data: {
+        department: selectedDepartment,
+        employee: selectedEmployee,
+        employeeId: employeeId,
+        role: data.Role
+      }
     };
 
   } catch (error) {
     console.error('Error verifying employee:', error);
-    toast.error("Failed to verify employee details. Please try again.");
-    return null;
+    return {
+      success: false,
+      error: "Failed to verify employee details. Please try again."
+    };
   }
 };

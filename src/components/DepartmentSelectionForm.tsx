@@ -40,6 +40,8 @@ const DepartmentSelectionForm: React.FC<DepartmentSelectionFormProps> = ({ onCon
     handleEmployeeIdChange
   } = useDepartmentForm(fetchEmployees, setEmployees);
 
+  const [verificationError, setVerificationError] = React.useState<string>('');
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
@@ -48,11 +50,14 @@ const DepartmentSelectionForm: React.FC<DepartmentSelectionFormProps> = ({ onCon
     }
 
     setSubmitting(true);
+    setVerificationError('');
 
     const result = await verifyEmployee(selectedDepartment, selectedEmployee, employeeId);
     
-    if (result) {
-      onContinue(result);
+    if (result.success && result.data) {
+      onContinue(result.data);
+    } else {
+      setVerificationError(result.error || 'Verification failed');
     }
     
     setSubmitting(false);
@@ -88,6 +93,12 @@ const DepartmentSelectionForm: React.FC<DepartmentSelectionFormProps> = ({ onCon
             fetchError={fetchError} 
             onRetry={fetchDepartments} 
           />
+        )}
+
+        {verificationError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {verificationError}
+          </div>
         )}
         
         <form onSubmit={handleSubmit} className="space-y-6">
