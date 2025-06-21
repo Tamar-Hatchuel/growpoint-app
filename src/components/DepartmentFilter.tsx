@@ -69,7 +69,7 @@ const DepartmentFilter: React.FC<DepartmentFilterProps> = ({
                   </SelectItem>
                 ))}
               </SelectContent>
-            </SelectContent>
+            </Select>
           </div>
         </div>
       </CardContent>
