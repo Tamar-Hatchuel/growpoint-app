@@ -3,56 +3,12 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
-import { Clock, TrendingUp, MessageSquare } from 'lucide-react';
+import { Clock, TrendingUp, MessageSquare, AlertTriangle } from 'lucide-react';
+import { useFeedbackData } from '@/hooks/useFeedbackData';
 
 interface FeedbackHistoryProps {
   employeeId?: string;
 }
-
-const feedbackHistory = [
-  {
-    date: '2024-01-15',
-    insight: 'Strong team collaboration detected',
-    cohesion: 3.8,
-    engagement: 7.2,
-    focus: 'maintain'
-  },
-  {
-    date: '2024-02-15',
-    insight: 'Improvement in communication patterns',
-    cohesion: 4.0,
-    engagement: 7.5,
-    focus: 'improve'
-  },
-  {
-    date: '2024-03-15',
-    insight: 'Excellent progress in team dynamics',
-    cohesion: 4.2,
-    engagement: 7.8,
-    focus: 'maintain'
-  },
-  {
-    date: '2024-04-15',
-    insight: 'Leadership skills developing well',
-    cohesion: 4.3,
-    engagement: 8.1,
-    focus: 'maintain'
-  },
-  {
-    date: '2024-05-15',
-    insight: 'Continued strong performance',
-    cohesion: 4.1,
-    engagement: 8.0,
-    focus: 'maintain'
-  },
-  {
-    date: '2024-06-15',
-    insight: 'Outstanding team contribution',
-    cohesion: 4.5,
-    engagement: 8.3,
-    focus: 'maintain'
-  },
-];
 
 const chartConfig = {
   cohesion: {
@@ -66,6 +22,68 @@ const chartConfig = {
 };
 
 const FeedbackHistory: React.FC<FeedbackHistoryProps> = ({ employeeId }) => {
+  const { feedbackData, loading, error } = useFeedbackData();
+
+  // Process data for the specific employee or show aggregate data
+  const processedHistory = React.useMemo(() => {
+    if (!feedbackData.length) return [];
+
+    // Filter by employee ID if provided, otherwise use all data
+    const relevantData = employeeId 
+      ? feedbackData.filter(response => response.employee_id?.toString() === employeeId)
+      : feedbackData;
+
+    return relevantData
+      .sort((a, b) => new Date(a.response_date).getTime() - new Date(b.response_date).getTime())
+      .map(response => ({
+        date: response.response_date,
+        insight: `Team focus: ${response.team_goal} - Department: ${response.department}`,
+        cohesion: response.cohesion_score,
+        engagement: response.engagement_score,
+        focus: response.team_goal.toLowerCase()
+      }));
+  }, [feedbackData, employeeId]);
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-growpoint-accent/20">
+          <CardContent className="p-6 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-growpoint-primary mx-auto mb-4"></div>
+            <p className="text-growpoint-dark">Loading feedback history...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-growpoint-accent/20">
+          <CardContent className="p-6 text-center">
+            <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-4" />
+            <p className="text-red-600">Error loading feedback history: {error}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!processedHistory.length) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-growpoint-accent/20">
+          <CardContent className="p-6 text-center">
+            <MessageSquare className="h-8 w-8 text-growpoint-primary mx-auto mb-4" />
+            <p className="text-growpoint-dark">No feedback history available yet.</p>
+            <p className="text-growpoint-dark/60 text-sm">Complete surveys to see your growth over time.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Growth Chart */}
@@ -80,10 +98,10 @@ const FeedbackHistory: React.FC<FeedbackHistoryProps> = ({ employeeId }) => {
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={feedbackHistory}>
+              <LineChart data={processedHistory}>
                 <XAxis 
                   dataKey="date" 
-                  tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short' })}
+                  tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 />
                 <YAxis domain={[0, 10]} />
                 <ChartTooltip content={<ChartTooltipContent />} />
@@ -118,7 +136,7 @@ const FeedbackHistory: React.FC<FeedbackHistoryProps> = ({ employeeId }) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {feedbackHistory.reverse().map((feedback, index) => (
+            {processedHistory.reverse().map((feedback, index) => (
               <div key={index} className="flex items-start gap-4 p-4 bg-growpoint-soft/30 rounded-lg">
                 <div className="bg-growpoint-primary p-2 rounded-full flex-shrink-0">
                   <Clock className="w-4 h-4 text-white" />
@@ -146,7 +164,7 @@ const FeedbackHistory: React.FC<FeedbackHistoryProps> = ({ employeeId }) => {
                   
                   <div className="flex gap-4 text-sm">
                     <span className="text-growpoint-dark/60">
-                      Cohesion: <strong>{feedback.cohesion}/5</strong>
+                      Cohesion: <strong>{feedback.cohesion}/10</strong>
                     </span>
                     <span className="text-growpoint-dark/60">
                       Engagement: <strong>{feedback.engagement}/10</strong>

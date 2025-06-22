@@ -36,6 +36,50 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback_responses: {
+        Row: {
+          cohesion_score: number | null
+          created_at: string
+          department: string
+          employee_id: number | null
+          engagement_score: number | null
+          friction_level: number | null
+          id: string
+          response_date: string
+          team_goal: string | null
+        }
+        Insert: {
+          cohesion_score?: number | null
+          created_at?: string
+          department: string
+          employee_id?: number | null
+          engagement_score?: number | null
+          friction_level?: number | null
+          id?: string
+          response_date?: string
+          team_goal?: string | null
+        }
+        Update: {
+          cohesion_score?: number | null
+          created_at?: string
+          department?: string
+          employee_id?: number | null
+          engagement_score?: number | null
+          friction_level?: number | null
+          id?: string
+          response_date?: string
+          team_goal?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_responses_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["Employee ID"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

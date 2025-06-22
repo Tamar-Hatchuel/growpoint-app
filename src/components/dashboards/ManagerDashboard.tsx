@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import DepartmentFilter from '../DepartmentFilter';
 import TeamHealthIndicator from '../TeamHealthIndicator';
 import FrictionAlertModal from '../FrictionAlertModal';
+import { useFeedbackData } from '@/hooks/useFeedbackData';
 
 interface ManagerDashboardProps {
   userData: {
@@ -17,46 +19,108 @@ interface ManagerDashboardProps {
   onRestart?: () => void;
 }
 
-// Mock data for demonstration
-const engagementData = [
-  { team: 'Frontend', engagement: 8.2 },
-  { team: 'Backend', engagement: 7.8 },
-  { team: 'Design', engagement: 8.5 },
-  { team: 'QA', engagement: 7.1 },
-];
-
-const focusData = [
-  { name: 'Maintain', value: 40, fill: '#E5989B' },
-  { name: 'Improve', value: 35, fill: '#FFB4A2' },
-  { name: 'Resolve', value: 25, fill: '#B5828C' },
-];
-
-const teamMetrics = [
-  { name: 'Team Alpha', engagement: 8.1, friction: 1.8 },
-  { name: 'Team Beta', engagement: 6.9, friction: 3.2 },
-  { name: 'Team Gamma', engagement: 7.5, friction: 2.1 },
-];
-
 const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ userData, onRestart }) => {
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [dateRange, setDateRange] = useState('last-30-days');
   const [showFrictionAlert, setShowFrictionAlert] = useState(false);
   const [alertTeam, setAlertTeam] = useState<{ name: string; friction: number } | null>(null);
+  const { feedbackData, loading, error } = useFeedbackData();
+
+  // Process the feedback data for manager dashboard
+  const processedData = React.useMemo(() => {
+    if (!feedbackData.length) return { teamMetrics: [], engagementData: [], focusData: [] };
+
+    // Group by department to create team metrics
+    const departmentStats = feedbackData.reduce((acc, response) => {
+      const dept = response.department;
+      if (!acc[dept]) {
+        acc[dept] = {
+          name: dept,
+          engagement: [],
+          friction: []
+        };
+      }
+      
+      acc[dept].engagement.push(response.engagement_score);
+      acc[dept].friction.push(response.friction_level);
+      
+      return acc;
+    }, {} as any);
+
+    const teamMetrics = Object.values(departmentStats).map((team: any) => ({
+      name: team.name,
+      engagement: Number((team.engagement.reduce((sum: number, val: number) => sum + val, 0) / team.engagement.length).toFixed(1)),
+      friction: Number((team.friction.reduce((sum: number, val: number) => sum + val, 0) / team.friction.length).toFixed(1))
+    }));
+
+    const engagementData = teamMetrics.slice(0, 4).map(team => ({
+      team: team.name,
+      engagement: team.engagement
+    }));
+
+    // Calculate focus distribution
+    const focusDistribution = feedbackData.reduce((acc, response) => {
+      acc[response.team_goal] = (acc[response.team_goal] || 0) + 1;
+      return acc;
+    }, {} as any);
+
+    const total = feedbackData.length;
+    const focusData = [
+      { 
+        name: 'Maintain', 
+        value: Math.round((focusDistribution['Maintain'] || 0) / total * 100), 
+        fill: '#E5989B' 
+      },
+      { 
+        name: 'Improve', 
+        value: Math.round((focusDistribution['Improve'] || 0) / total * 100), 
+        fill: '#FFB4A2' 
+      },
+      { 
+        name: 'Resolve', 
+        value: Math.round((focusDistribution['Resolve'] || 0) / total * 100), 
+        fill: '#B5828C' 
+      },
+    ];
+
+    return { teamMetrics, engagementData, focusData };
+  }, [feedbackData]);
 
   useEffect(() => {
     // Check for high friction teams on component mount
-    const highFrictionTeam = teamMetrics.find(team => team.friction > 3.0);
-    if (highFrictionTeam) {
+    const highFrictionTeam = processedData.teamMetrics.find(team => team.friction > 3.0);
+    if (highFrictionTeam && !showFrictionAlert) {
       setAlertTeam({ name: highFrictionTeam.name, friction: highFrictionTeam.friction });
       setShowFrictionAlert(true);
     }
-  }, []);
+  }, [processedData.teamMetrics, showFrictionAlert]);
 
   const handleViewSuggestions = () => {
     setShowFrictionAlert(false);
-    // Navigate to team suggestions (placeholder)
     console.log('Navigating to team suggestions...');
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-growpoint-primary mx-auto mb-4"></div>
+          <p className="text-growpoint-dark">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <p className="text-red-600">Error loading dashboard data: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -100,7 +164,7 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ userData, onRestart
 
           {/* Team Health Overview */}
           <div className="grid md:grid-cols-3 gap-6">
-            {teamMetrics.map((team, index) => (
+            {processedData.teamMetrics.slice(0, 3).map((team, index) => (
               <TeamHealthIndicator
                 key={index}
                 teamName={team.name}
@@ -120,8 +184,8 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ userData, onRestart
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-growpoint-dark">12</div>
-                <p className="text-xs text-green-600">+2 from last month</p>
+                <div className="text-2xl font-bold text-growpoint-dark">{processedData.teamMetrics.length}</div>
+                <p className="text-xs text-green-600">Active departments</p>
               </CardContent>
             </Card>
 
@@ -133,8 +197,13 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ userData, onRestart
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-growpoint-dark">7.8</div>
-                <p className="text-xs text-green-600">+0.3 from last week</p>
+                <div className="text-2xl font-bold text-growpoint-dark">
+                  {processedData.teamMetrics.length > 0 
+                    ? (processedData.teamMetrics.reduce((sum, team) => sum + team.engagement, 0) / processedData.teamMetrics.length).toFixed(1)
+                    : '0.0'
+                  }
+                </div>
+                <p className="text-xs text-green-600">Overall average</p>
               </CardContent>
             </Card>
 
@@ -146,8 +215,10 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ userData, onRestart
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-yellow-600">3</div>
-                <p className="text-xs text-yellow-600">Requires attention</p>
+                <div className="text-2xl font-bold text-yellow-600">
+                  {processedData.teamMetrics.filter(team => team.friction > 2.5).length}
+                </div>
+                <p className="text-xs text-yellow-600">High friction levels</p>
               </CardContent>
             </Card>
 
@@ -159,8 +230,10 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ userData, onRestart
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-growpoint-dark">5</div>
-                <p className="text-xs text-growpoint-dark/60">Active initiatives</p>
+                <div className="text-2xl font-bold text-growpoint-dark">
+                  {feedbackData.filter(r => r.team_goal === 'Resolve').length}
+                </div>
+                <p className="text-xs text-growpoint-dark/60">Need resolution</p>
               </CardContent>
             </Card>
           </div>
@@ -178,7 +251,7 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ userData, onRestart
                   engagement: { label: "Engagement", color: "#E5989B" }
                 }} className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={engagementData}>
+                    <BarChart data={processedData.engagementData}>
                       <XAxis dataKey="team" />
                       <YAxis domain={[0, 10]} />
                       <ChartTooltip content={<ChartTooltipContent />} />
@@ -204,14 +277,14 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ userData, onRestart
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={focusData}
+                        data={processedData.focusData}
                         cx="50%"
                         cy="50%"
                         outerRadius={100}
                         dataKey="value"
                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       >
-                        {focusData.map((entry, index) => (
+                        {processedData.focusData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.fill} />
                         ))}
                       </Pie>

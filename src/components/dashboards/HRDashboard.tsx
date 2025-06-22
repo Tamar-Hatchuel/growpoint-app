@@ -6,6 +6,7 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, ResponsiveContainer } fro
 import { Building2, Users, TrendingUp, AlertTriangle, Target, Award } from 'lucide-react';
 import TeamHealthIndicator from '../TeamHealthIndicator';
 import DepartmentFilter from '../DepartmentFilter';
+import { useFeedbackData } from '@/hooks/useFeedbackData';
 
 interface HRDashboardProps {
   userData: {
@@ -14,23 +15,6 @@ interface HRDashboardProps {
     employeeId?: string;
   };
 }
-
-const companyMetrics = [
-  { department: 'Engineering', engagement: 8.1, employees: 45, friction: 1.4 },
-  { department: 'Sales', engagement: 7.8, employees: 32, friction: 1.8 },
-  { department: 'Marketing', engagement: 7.5, employees: 28, friction: 2.0 },
-  { department: 'Support', engagement: 8.3, employees: 22, friction: 1.2 },
-  { department: 'Operations', engagement: 7.9, employees: 18, friction: 1.6 },
-];
-
-const companyTrendData = [
-  { month: 'Jan', engagement: 7.2, retention: 94, satisfaction: 3.8 },
-  { month: 'Feb', engagement: 7.4, retention: 95, satisfaction: 3.9 },
-  { month: 'Mar', engagement: 7.6, retention: 93, satisfaction: 4.0 },
-  { month: 'Apr', engagement: 7.8, retention: 96, satisfaction: 4.1 },
-  { month: 'May', engagement: 7.9, retention: 94, satisfaction: 4.0 },
-  { month: 'Jun', engagement: 8.0, retention: 97, satisfaction: 4.2 },
-];
 
 const chartConfig = {
   engagement: {
@@ -54,10 +38,79 @@ const chartConfig = {
 const HRDashboard: React.FC<HRDashboardProps> = ({ userData }) => {
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [dateRange, setDateRange] = useState('last-30-days');
+  const { feedbackData, loading, error } = useFeedbackData();
 
-  const totalEmployees = companyMetrics.reduce((sum, dept) => sum + dept.employees, 0);
-  const avgEngagement = companyMetrics.reduce((sum, dept) => sum + dept.engagement, 0) / companyMetrics.length;
-  const highRiskTeams = companyMetrics.filter(dept => dept.friction > 1.8).length;
+  // Process the feedback data for dashboard metrics
+  const processedData = React.useMemo(() => {
+    if (!feedbackData.length) return { departments: [], totalEmployees: 0, avgEngagement: 0, highRiskTeams: 0 };
+
+    const departmentStats = feedbackData.reduce((acc, response) => {
+      const dept = response.department;
+      if (!acc[dept]) {
+        acc[dept] = {
+          department: dept,
+          engagement: [],
+          friction: [],
+          employees: new Set(),
+          count: 0
+        };
+      }
+      
+      acc[dept].engagement.push(response.engagement_score);
+      acc[dept].friction.push(response.friction_level);
+      if (response.employee_id) {
+        acc[dept].employees.add(response.employee_id);
+      }
+      acc[dept].count++;
+      
+      return acc;
+    }, {} as any);
+
+    const departments = Object.values(departmentStats).map((dept: any) => ({
+      department: dept.department,
+      engagement: Number((dept.engagement.reduce((sum: number, val: number) => sum + val, 0) / dept.engagement.length).toFixed(1)),
+      employees: dept.employees.size || dept.count,
+      friction: Number((dept.friction.reduce((sum: number, val: number) => sum + val, 0) / dept.friction.length).toFixed(1))
+    }));
+
+    const totalEmployees = departments.reduce((sum, dept) => sum + dept.employees, 0);
+    const avgEngagement = Number((departments.reduce((sum, dept) => sum + dept.engagement, 0) / departments.length).toFixed(1));
+    const highRiskTeams = departments.filter(dept => dept.friction > 2.5).length;
+
+    return { departments, totalEmployees, avgEngagement, highRiskTeams };
+  }, [feedbackData]);
+
+  // Create trend data (mock for now since we need historical data)
+  const companyTrendData = [
+    { month: 'Jan', engagement: processedData.avgEngagement - 0.8, retention: 94, satisfaction: 3.8 },
+    { month: 'Feb', engagement: processedData.avgEngagement - 0.6, retention: 95, satisfaction: 3.9 },
+    { month: 'Mar', engagement: processedData.avgEngagement - 0.4, retention: 93, satisfaction: 4.0 },
+    { month: 'Apr', engagement: processedData.avgEngagement - 0.2, retention: 96, satisfaction: 4.1 },
+    { month: 'May', engagement: processedData.avgEngagement - 0.1, retention: 94, satisfaction: 4.0 },
+    { month: 'Jun', engagement: processedData.avgEngagement, retention: 97, satisfaction: 4.2 },
+  ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-growpoint-primary mx-auto mb-4"></div>
+          <p className="text-growpoint-dark">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <p className="text-red-600">Error loading dashboard data: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-6">
@@ -86,12 +139,12 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData }) => {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <Card className="border-growpoint-accent/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-growpoint-dark">Total Employees</CardTitle>
+              <CardTitle className="text-sm font-medium text-growpoint-dark">Total Responses</CardTitle>
               <Users className="h-4 w-4 text-growpoint-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-growpoint-dark">{totalEmployees}</div>
-              <p className="text-xs text-green-600">+12 this quarter</p>
+              <div className="text-2xl font-bold text-growpoint-dark">{feedbackData.length}</div>
+              <p className="text-xs text-green-600">Survey responses</p>
             </CardContent>
           </Card>
 
@@ -101,7 +154,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData }) => {
               <Building2 className="h-4 w-4 text-growpoint-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-growpoint-dark">{companyMetrics.length}</div>
+              <div className="text-2xl font-bold text-growpoint-dark">{processedData.departments.length}</div>
               <p className="text-xs text-growpoint-dark/60">Active departments</p>
             </CardContent>
           </Card>
@@ -112,8 +165,8 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData }) => {
               <TrendingUp className="h-4 w-4 text-growpoint-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-growpoint-dark">{avgEngagement.toFixed(1)}/10</div>
-              <p className="text-xs text-green-600">+0.3 this month</p>
+              <div className="text-2xl font-bold text-growpoint-dark">{processedData.avgEngagement || 0}/10</div>
+              <p className="text-xs text-green-600">Company average</p>
             </CardContent>
           </Card>
 
@@ -123,40 +176,35 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData }) => {
               <AlertTriangle className="h-4 w-4 text-yellow-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-growpoint-dark">{highRiskTeams}</div>
-              <p className="text-xs text-yellow-600">Need attention</p>
+              <div className="text-2xl font-bold text-growpoint-dark">{processedData.highRiskTeams}</div>
+              <p className="text-xs text-yellow-600">High friction levels</p>
             </CardContent>
           </Card>
 
           <Card className="border-growpoint-accent/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-growpoint-dark">Retention Rate</CardTitle>
-              <Award className="h-4 w-4 text-growpoint-primary" />
+              <CardTitle className="text-sm font-medium text-growpoint-dark">Focus Areas</CardTitle>
+              <Target className="h-4 w-4 text-growpoint-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-growpoint-dark">97%</div>
-              <p className="text-xs text-green-600">+3% this quarter</p>
+              <div className="text-2xl font-bold text-growpoint-dark">
+                {feedbackData.filter(r => r.team_goal === 'Resolve').length}
+              </div>
+              <p className="text-xs text-red-600">Need resolution</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Department Health Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <TeamHealthIndicator 
-            frictionLevel={1.2}
-            engagementScore={8.3}
-            teamName="Support"
-          />
-          <TeamHealthIndicator 
-            frictionLevel={1.4}
-            engagementScore={8.1}
-            teamName="Engineering"
-          />
-          <TeamHealthIndicator 
-            frictionLevel={2.0}
-            engagementScore={7.5}
-            teamName="Marketing"
-          />
+          {processedData.departments.slice(0, 3).map((dept, index) => (
+            <TeamHealthIndicator 
+              key={index}
+              frictionLevel={dept.friction}
+              engagementScore={dept.engagement}
+              teamName={dept.department}
+            />
+          ))}
         </div>
 
         {/* Analytics Charts */}
@@ -173,7 +221,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData }) => {
             <CardContent>
               <ChartContainer config={chartConfig} className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={companyMetrics}>
+                  <BarChart data={processedData.departments}>
                     <XAxis dataKey="department" angle={-45} textAnchor="end" height={80} />
                     <YAxis domain={[0, 10]} />
                     <ChartTooltip content={<ChartTooltipContent />} />
@@ -189,14 +237,14 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData }) => {
             <CardHeader>
               <CardTitle className="text-growpoint-dark flex items-center gap-2">
                 <Users className="w-5 h-5" />
-                Employee Distribution
+                Response Distribution
               </CardTitle>
-              <CardDescription>Headcount across departments</CardDescription>
+              <CardDescription>Survey responses across departments</CardDescription>
             </CardHeader>
             <CardContent>
               <ChartContainer config={chartConfig} className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={companyMetrics}>
+                  <BarChart data={processedData.departments}>
                     <XAxis dataKey="department" angle={-45} textAnchor="end" height={80} />
                     <YAxis />
                     <ChartTooltip content={<ChartTooltipContent />} />
