@@ -49,7 +49,7 @@ export const useDepartments = () => {
         if (rpcData && Array.isArray(rpcData)) {
           const departmentNames = (rpcData as DepartmentRpcResult[])
             .map(item => item.department_name)
-            .filter(Boolean)
+            .filter((dept): dept is string => Boolean(dept))
             .sort();
           setDepartments(departmentNames);
         }
