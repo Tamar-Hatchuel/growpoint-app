@@ -34,7 +34,15 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
   const [employeeId, setEmployeeId] = useState('');
   const [employeeIdError, setEmployeeIdError] = useState('');
 
-  const { departments, employees, fetchEmployees, setEmployees } = useEmployeeData();
+  const { 
+    departments, 
+    employees, 
+    fetchEmployees, 
+    setEmployees,
+    departmentsLoading,
+    employeesLoading 
+  } = useEmployeeData();
+  
   const { authenticateUser, isLoading } = useEmployeeAuth();
 
   // Fetch employees when department changes
@@ -42,6 +50,8 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
     if (selectedDepartment) {
       fetchEmployees(selectedDepartment);
       setSelectedEmployee(''); // Reset employee selection
+    } else {
+      setEmployees([]); // Clear employees when no department selected
     }
   }, [selectedDepartment]);
 
@@ -76,6 +86,7 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
   };
 
   const isFormValid = selectedDepartment && selectedEmployee && employeeId && !employeeIdError;
+  const isFormLoading = departmentsLoading || employeesLoading || isLoading;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 flex items-center justify-center p-4">
@@ -123,9 +134,9 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
               <Button
                 type="submit"
                 className="w-full bg-growpoint-primary hover:bg-growpoint-accent text-white font-semibold py-3 rounded-lg transition-all duration-200 transform hover:scale-[1.02]"
-                disabled={!isFormValid || isLoading}
+                disabled={!isFormValid || isFormLoading}
               >
-                {isLoading ? 'Authenticating...' : 'Continue'}
+                {isFormLoading ? 'Loading...' : 'Continue'}
               </Button>
             </form>
           </CardContent>
