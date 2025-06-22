@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
-import { Building2, Users, TrendingUp, AlertTriangle, Target, Award } from 'lucide-react';
+import { Building2, Users, TrendingUp, AlertTriangle, Target, Award, Home } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import TeamHealthIndicator from '../TeamHealthIndicator';
 import DepartmentFilter from '../DepartmentFilter';
 import { useFeedbackData } from '@/hooks/useFeedbackData';
@@ -14,6 +14,7 @@ interface HRDashboardProps {
     department?: string;
     employeeId?: string;
   };
+  onRestart?: () => void;
 }
 
 const chartConfig = {
@@ -35,7 +36,7 @@ const chartConfig = {
   },
 };
 
-const HRDashboard: React.FC<HRDashboardProps> = ({ userData }) => {
+const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [dateRange, setDateRange] = useState('last-30-days');
   const { feedbackData, loading, error } = useFeedbackData();
@@ -115,7 +116,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
+        {/* Header with Back to Home button */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <div className="bg-growpoint-primary p-3 rounded-full">
@@ -127,13 +128,32 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData }) => {
             </div>
           </div>
           
-          <DepartmentFilter 
-            selectedDepartment={selectedDepartment}
-            onDepartmentChange={setSelectedDepartment}
-            dateRange={dateRange}
-            onDateRangeChange={setDateRange}
-          />
+          <div className="flex items-center gap-4">
+            {onRestart && (
+              <Button
+                onClick={onRestart}
+                className="text-white font-semibold px-6 py-2 rounded-lg"
+                style={{ backgroundColor: '#FFB4A2' }}
+              >
+                <Home className="w-4 h-4 mr-2" />
+                Back to Home
+              </Button>
+            )}
+            <DepartmentFilter 
+              selectedDepartment={selectedDepartment}
+              onDepartmentChange={setSelectedDepartment}
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
+            />
+          </div>
         </div>
+
+        {/* Helper text */}
+        {onRestart && (
+          <p className="text-sm text-growpoint-dark/60 text-center -mt-4 mb-4">
+            Return to the start to explore again or give more feedback.
+          </p>
+        )}
 
         {/* Company Overview Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">

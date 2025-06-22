@@ -23,15 +23,19 @@ export const useEmployeeData = () => {
 
         if (fallbackError) throw fallbackError;
 
-        const uniqueDepartments = [...new Set(
-          fallbackData
-            .map(item => item.Department?.trim())
-            .filter(Boolean)
-        )].sort();
-        
-        setDepartments(uniqueDepartments);
+        if (fallbackData) {
+          const uniqueDepartments = [...new Set(
+            fallbackData
+              .map(item => item.Department?.trim())
+              .filter(Boolean)
+          )].sort();
+          
+          setDepartments(uniqueDepartments);
+        }
       } else {
-        setDepartments(data.map((item: any) => item.department_name).sort());
+        if (data) {
+          setDepartments(data.map((item: any) => item.department_name).sort());
+        }
       }
     } catch (error) {
       console.error('Error fetching departments:', error);
@@ -45,13 +49,15 @@ export const useEmployeeData = () => {
 
         if (finalError) throw finalError;
 
-        const uniqueDepartments = [...new Set(
-          data
-            .map(item => item.Department?.trim())
-            .filter(Boolean)
-        )].sort();
-        
-        setDepartments(uniqueDepartments);
+        if (data) {
+          const uniqueDepartments = [...new Set(
+            data
+              .map(item => item.Department?.trim())
+              .filter(Boolean)
+          )].sort();
+          
+          setDepartments(uniqueDepartments);
+        }
       } catch (finalError) {
         console.error('Final error fetching departments:', finalError);
         toast({
@@ -73,12 +79,14 @@ export const useEmployeeData = () => {
 
       if (error) throw error;
 
-      const employeeNames = data
-        .map(item => item.Employee_Name?.trim())
-        .filter(Boolean)
-        .sort();
-      
-      setEmployees(employeeNames);
+      if (data) {
+        const employeeNames = data
+          .map(item => item.Employee_Name?.trim())
+          .filter(Boolean)
+          .sort();
+        
+        setEmployees(employeeNames);
+      }
     } catch (error) {
       console.error('Error fetching employees:', error);
       toast({
