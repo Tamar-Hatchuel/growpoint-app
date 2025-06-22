@@ -30,7 +30,7 @@ export const useEmployeeData = () => {
               .filter(Boolean)
           )].sort();
           
-          setDepartments(uniqueDepartments);
+          setDepartments(uniqueDepartments as string[]);
         }
       } else {
         if (data) {
@@ -56,7 +56,7 @@ export const useEmployeeData = () => {
               .filter(Boolean)
           )].sort();
           
-          setDepartments(uniqueDepartments);
+          setDepartments(uniqueDepartments as string[]);
         }
       } catch (finalError) {
         console.error('Final error fetching departments:', finalError);
@@ -85,7 +85,7 @@ export const useEmployeeData = () => {
           .filter(Boolean)
           .sort();
         
-        setEmployees(employeeNames);
+        setEmployees(employeeNames as string[]);
       }
     } catch (error) {
       console.error('Error fetching employees:', error);
