@@ -1,4 +1,3 @@
-
 import React from 'react';
 import IdentificationScreen from '@/components/IdentificationScreen';
 import DepartmentSelectionScreen from '@/components/DepartmentSelectionScreen';
@@ -9,7 +8,7 @@ import OutcomeFocusScreen from '@/components/OutcomeFocusScreen';
 import InsightsScreen from '@/components/InsightsScreen';
 import ThankYouScreen from '@/components/ThankYouScreen';
 import HRDashboard from '@/components/dashboards/HRDashboard';
-import ManagerDashboard from '@/components/dashboards/ManagerDashboard';
+import AdminDashboard from '@/components/dashboards/AdminDashboard';
 
 export type FlowStep = 'welcome' | 'identification' | 'department' | 'hr-choice' | 'admin-choice' | 'survey' | 'focus' | 'insights' | 'hr-dashboard' | 'manager-dashboard' | 'thank-you';
 
@@ -171,7 +170,7 @@ const FlowManager: React.FC<FlowManagerProps> = ({
 
     case 'manager-dashboard':
       return (
-        <ManagerDashboard 
+        <AdminDashboard 
           userData={userData}
           onRestart={onRestart}
         />
