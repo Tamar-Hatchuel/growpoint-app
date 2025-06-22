@@ -33,7 +33,7 @@ export const useEmployeeData = () => {
           setDepartments(uniqueDepartments as string[]);
         }
       } else {
-        if (data) {
+        if (data && Array.isArray(data)) {
           setDepartments(data.map((item: any) => item.department_name).sort());
         }
       }
@@ -49,7 +49,7 @@ export const useEmployeeData = () => {
 
         if (finalError) throw finalError;
 
-        if (data) {
+        if (data && Array.isArray(data)) {
           const uniqueDepartments = [...new Set(
             data
               .map(item => item.Department?.trim())
@@ -79,7 +79,7 @@ export const useEmployeeData = () => {
 
       if (error) throw error;
 
-      if (data) {
+      if (data && Array.isArray(data)) {
         const employeeNames = data
           .map(item => item.Employee_Name?.trim())
           .filter(Boolean)
