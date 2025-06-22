@@ -11,10 +11,10 @@ export const useEmployeeData = () => {
   const fetchDepartments = async () => {
     try {
       // Use DISTINCT and TRIM to get clean, unique department names
-      const { data, error } = await supabase
+      const { data: rpcData, error: rpcError } = await supabase
         .rpc('get_clean_departments');
 
-      if (error) {
+      if (rpcError) {
         // Fallback to regular query if RPC doesn't exist
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('employees')
@@ -23,18 +23,18 @@ export const useEmployeeData = () => {
 
         if (fallbackError) throw fallbackError;
 
-        if (fallbackData) {
+        if (fallbackData && Array.isArray(fallbackData)) {
           const uniqueDepartments = [...new Set(
             fallbackData
-              .map(item => item.Department?.trim())
+              .map((item: any) => item.Department?.trim())
               .filter(Boolean)
           )].sort();
           
           setDepartments(uniqueDepartments as string[]);
         }
       } else {
-        if (data && Array.isArray(data)) {
-          setDepartments(data.map((item: any) => item.department_name).sort());
+        if (rpcData && Array.isArray(rpcData)) {
+          setDepartments(rpcData.map((item: any) => item.department_name).sort());
         }
       }
     } catch (error) {
@@ -42,17 +42,17 @@ export const useEmployeeData = () => {
       
       // Try one more fallback approach
       try {
-        const { data, error: finalError } = await supabase
+        const { data: finalData, error: finalError } = await supabase
           .from('employees')
           .select('Department')
           .not('Department', 'is', null);
 
         if (finalError) throw finalError;
 
-        if (data && Array.isArray(data)) {
+        if (finalData && Array.isArray(finalData)) {
           const uniqueDepartments = [...new Set(
-            data
-              .map(item => item.Department?.trim())
+            finalData
+              .map((item: any) => item.Department?.trim())
               .filter(Boolean)
           )].sort();
           
@@ -71,7 +71,7 @@ export const useEmployeeData = () => {
 
   const fetchEmployees = async (department: string) => {
     try {
-      const { data, error } = await supabase
+      const { data: employeeData, error } = await supabase
         .from('employees')
         .select('Employee_Name')
         .eq('Department', department)
@@ -79,9 +79,9 @@ export const useEmployeeData = () => {
 
       if (error) throw error;
 
-      if (data && Array.isArray(data)) {
-        const employeeNames = data
-          .map(item => item.Employee_Name?.trim())
+      if (employeeData && Array.isArray(employeeData)) {
+        const employeeNames = employeeData
+          .map((item: any) => item.Employee_Name?.trim())
           .filter(Boolean)
           .sort();
         
