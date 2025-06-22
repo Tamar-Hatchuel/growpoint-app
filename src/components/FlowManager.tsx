@@ -1,3 +1,4 @@
+
 import React from 'react';
 import IdentificationScreen from '@/components/IdentificationScreen';
 import DepartmentSelectionScreen from '@/components/DepartmentSelectionScreen';
@@ -74,7 +75,13 @@ const FlowManager: React.FC<FlowManagerProps> = ({
 
   const handleSurveyContinue = (responses: Record<number, number>) => {
     onUserDataUpdate({ surveyResponses: responses });
-    onStepChange('focus');
+    
+    // Check if user has "User" permission - go directly to thank you page
+    if (userData.permission === 'user') {
+      onStepChange('thank-you');
+    } else {
+      onStepChange('focus');
+    }
   };
 
   const handleFocusContinue = (focus: string) => {
@@ -158,6 +165,7 @@ const FlowManager: React.FC<FlowManagerProps> = ({
       return (
         <HRDashboard 
           userData={userData}
+          onRestart={onRestart}
         />
       );
 

@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, X } from 'lucide-react';
 
 interface FrictionAlertModalProps {
   open: boolean;
@@ -27,7 +27,16 @@ const FrictionAlertModal: React.FC<FrictionAlertModalProps> = ({
 }) => {
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md mx-auto border-red-200 bg-red-50">
+      <DialogContent className="max-w-md mx-auto border-red-200 bg-red-50 relative">
+        {/* Close button in top-right corner */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1 rounded-full hover:bg-red-100 transition-colors z-10"
+          aria-label="Close alert"
+        >
+          <X className="w-5 h-5 text-red-600" />
+        </button>
+
         <DialogHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="bg-red-100 p-3 rounded-full">

@@ -10,22 +10,56 @@ export const useEmployeeData = () => {
 
   const fetchDepartments = async () => {
     try {
+      // Use DISTINCT and TRIM to get clean, unique department names
       const { data, error } = await supabase
-        .from('employees')
-        .select('Department')
-        .not('Department', 'is', null);
+        .rpc('get_clean_departments');
 
-      if (error) throw error;
+      if (error) {
+        // Fallback to regular query if RPC doesn't exist
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('employees')
+          .select('Department')
+          .not('Department', 'is', null);
 
-      const uniqueDepartments = [...new Set(data.map(item => item.Department))].filter(Boolean);
-      setDepartments(uniqueDepartments);
+        if (fallbackError) throw fallbackError;
+
+        const uniqueDepartments = [...new Set(
+          fallbackData
+            .map(item => item.Department?.trim())
+            .filter(Boolean)
+        )].sort();
+        
+        setDepartments(uniqueDepartments);
+      } else {
+        setDepartments(data.map((item: any) => item.department_name).sort());
+      }
     } catch (error) {
       console.error('Error fetching departments:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load departments. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Try one more fallback approach
+      try {
+        const { data, error: finalError } = await supabase
+          .from('employees')
+          .select('Department')
+          .not('Department', 'is', null);
+
+        if (finalError) throw finalError;
+
+        const uniqueDepartments = [...new Set(
+          data
+            .map(item => item.Department?.trim())
+            .filter(Boolean)
+        )].sort();
+        
+        setDepartments(uniqueDepartments);
+      } catch (finalError) {
+        console.error('Final error fetching departments:', finalError);
+        toast({
+          title: "Error",
+          description: "Failed to load departments. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -39,7 +73,11 @@ export const useEmployeeData = () => {
 
       if (error) throw error;
 
-      const employeeNames = data.map(item => item.Employee_Name).filter(Boolean);
+      const employeeNames = data
+        .map(item => item.Employee_Name?.trim())
+        .filter(Boolean)
+        .sort();
+      
       setEmployees(employeeNames);
     } catch (error) {
       console.error('Error fetching employees:', error);

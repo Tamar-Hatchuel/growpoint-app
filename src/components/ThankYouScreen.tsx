@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Heart } from 'lucide-react';
+import { CheckCircle, Heart, Lightbulb } from 'lucide-react';
 
 interface ThankYouScreenProps {
   onRestart: () => void;
@@ -25,24 +25,50 @@ const ThankYouScreen: React.FC<ThankYouScreenProps> = ({ onRestart }) => {
           </CardHeader>
           
           <CardContent>
-            <div className="space-y-4">
-              <p className="text-lg text-growpoint-dark/80">
-                Thanks for your input! Your feedback helps your team grow.
-              </p>
+            <div className="space-y-6">
+              <div className="text-center space-y-3">
+                <p className="text-lg text-growpoint-dark/80">
+                  Your feedback was submitted anonymously and helps your team grow.
+                </p>
+                <p className="text-base text-growpoint-dark/70">
+                  We appreciate your contribution to building a stronger workplace.
+                </p>
+              </div>
+              
+              {/* Motivational Tip Box */}
+              <Card className="bg-growpoint-soft/50 border-growpoint-primary/20">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="bg-growpoint-primary/10 p-2 rounded-full">
+                      <Lightbulb className="w-5 h-5 text-growpoint-primary" />
+                    </div>
+                    <div className="text-left">
+                      <h4 className="font-semibold text-growpoint-dark mb-1">💡 Tip of the Day</h4>
+                      <p className="text-sm text-growpoint-dark/80">
+                        A small word of encouragement can spark a big impact.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
               
               <div className="flex items-center justify-center gap-2 text-growpoint-accent">
                 <Heart className="w-5 h-5 fill-current" />
                 <span className="text-sm font-medium">We appreciate your participation</span>
               </div>
               
-              <div className="pt-4">
+              <div className="pt-4 space-y-3">
                 <Button
                   onClick={onRestart}
-                  variant="ghost"
-                  className="text-growpoint-primary hover:text-growpoint-accent hover:bg-growpoint-soft/50"
+                  className="w-full text-white font-semibold py-3 rounded-lg"
+                  style={{ backgroundColor: '#FFB4A2' }}
                 >
-                  Start Over
+                  Back to Home
                 </Button>
+                
+                <p className="text-xs text-growpoint-dark/60">
+                  Return to the start to explore again or give more feedback.
+                </p>
               </div>
             </div>
           </CardContent>

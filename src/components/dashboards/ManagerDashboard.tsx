@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -134,16 +133,16 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ userData, onRestart
       
       <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-6">
         <div className="max-w-7xl mx-auto space-y-8">
-          {/* Header */}
+          {/* Header with Back to Home button */}
           <div className="text-center relative">
             {onRestart && (
               <Button
                 onClick={onRestart}
-                variant="outline"
-                className="absolute left-0 top-0 border-growpoint-accent/20 hover:bg-growpoint-soft"
+                className="absolute left-0 top-0 text-white font-semibold px-6 py-2 rounded-lg"
+                style={{ backgroundColor: '#FFB4A2' }}
               >
                 <Home className="w-4 h-4 mr-2" />
-                Back to Start
+                Back to Home
               </Button>
             )}
             <h1 className="text-4xl font-bold text-growpoint-dark mb-2">
@@ -151,6 +150,9 @@ const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ userData, onRestart
             </h1>
             <p className="text-xl text-growpoint-dark/70">
               Welcome back, {userData.name || 'Manager'}! Here's your team overview.
+            </p>
+            <p className="text-sm text-growpoint-dark/60 mt-2">
+              Return to the start to explore again or give more feedback.
             </p>
           </div>
 
