@@ -1,13 +1,20 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import OnboardingModal from './OnboardingModal';
+import SubmitSurveyButton from './SubmitSurveyButton';
+import { useSurveySubmission } from '@/hooks/useSurveySubmission';
 
 interface SociometricTestScreenProps {
   onBack: () => void;
   onContinue: (responses: Record<number, number>) => void;
+  userData?: {
+    department?: string;
+    userDepartment?: string;
+    employeeId?: string;
+  };
 }
 
 const questions = [
@@ -28,11 +35,15 @@ const emojiScale = [
   { emoji: '😊', label: 'Excellent', value: 5 }
 ];
 
-const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({ onBack, onContinue }) => {
+const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({ 
+  onBack, 
+  onContinue,
+  userData = {}
+}) => {
   const [responses, setResponses] = useState<Record<number, number>>({});
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const { toast } = useToast();
+  const { submitSurvey, isSubmitting, isSuccess, error, resetSubmission } = useSurveySubmission();
 
   useEffect(() => {
     // Check if user has seen onboarding before (using localStorage)
@@ -65,19 +76,33 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({ onBack, o
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (Object.keys(responses).length === questions.length) {
-      // Show success toast
-      toast({
-        title: "Thanks! Your feedback was submitted successfully.",
-        description: "Your anonymous responses help build stronger teams.",
-        duration: 3000,
-        className: "bg-[#FFCDB2] border-orange-200 text-growpoint-dark",
+      const success = await submitSurvey({
+        responses,
+        department: userData.department || 'Unknown',
+        userDepartment: userData.userDepartment,
+        employeeId: userData.employeeId,
       });
       
-      onContinue(responses);
+      if (success) {
+        // Wait a moment to show success state, then continue
+        setTimeout(() => {
+          onContinue(responses);
+        }, 2000);
+      }
     }
   };
+
+  // Reset submission state when error occurs and user tries again
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        resetSubmission();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, resetSubmission]);
 
   const progress = ((currentQuestion + 1) / questions.length) * 100;
   const allQuestionsAnswered = Object.keys(responses).length === questions.length;
@@ -170,28 +195,28 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({ onBack, o
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 ) : (
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={!allQuestionsAnswered}
-                    className="bg-growpoint-primary hover:bg-growpoint-accent text-white"
-                  >
-                    Complete Survey
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
+                  <SubmitSurveyButton
+                    onSubmit={handleSubmit}
+                    isDisabled={!allQuestionsAnswered}
+                    isSubmitting={isSubmitting}
+                    isSuccess={isSuccess}
+                    hasError={!!error}
+                  />
                 )}
               </div>
             </CardContent>
           </Card>
           
           {/* Sticky Submit Button for Mobile */}
-          {allQuestionsAnswered && (
+          {allQuestionsAnswered && currentQuestion === questions.length - 1 && (
             <div className="fixed bottom-4 left-4 right-4 md:hidden">
-              <Button
-                onClick={handleSubmit}
-                className="w-full bg-growpoint-primary hover:bg-growpoint-accent text-white font-semibold py-3 rounded-lg shadow-lg"
-              >
-                Submit Survey
-              </Button>
+              <SubmitSurveyButton
+                onSubmit={handleSubmit}
+                isDisabled={!allQuestionsAnswered}
+                isSubmitting={isSubmitting}
+                isSuccess={isSuccess}
+                hasError={!!error}
+              />
             </div>
           )}
         </div>

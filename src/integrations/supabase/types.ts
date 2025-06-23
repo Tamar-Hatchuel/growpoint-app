@@ -46,7 +46,10 @@ export type Database = {
           friction_level: number | null
           id: string
           response_date: string
+          responses: Json | null
+          session_id: string | null
           team_goal: string | null
+          user_department: string | null
         }
         Insert: {
           cohesion_score?: number | null
@@ -57,7 +60,10 @@ export type Database = {
           friction_level?: number | null
           id?: string
           response_date?: string
+          responses?: Json | null
+          session_id?: string | null
           team_goal?: string | null
+          user_department?: string | null
         }
         Update: {
           cohesion_score?: number | null
@@ -68,7 +74,10 @@ export type Database = {
           friction_level?: number | null
           id?: string
           response_date?: string
+          responses?: Json | null
+          session_id?: string | null
           team_goal?: string | null
+          user_department?: string | null
         }
         Relationships: [
           {

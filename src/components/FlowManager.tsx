@@ -139,6 +139,7 @@ const FlowManager: React.FC<FlowManagerProps> = ({
         <SociometricTestScreen 
           onBack={() => goBack('department')} 
           onContinue={handleSurveyContinue}
+          userData={userData}
         />
       );
     
