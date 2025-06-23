@@ -1,8 +1,7 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useSurveyMetrics } from './useSurveyMetrics';
+import { calculateSurveyMetrics } from '@/utils/surveyMetrics';
 
 interface SurveySubmissionData {
   responses: Record<number, number>;
@@ -22,8 +21,8 @@ export const useSurveySubmission = () => {
       setIsSubmitting(true);
       setError(null);
 
-      // Calculate metrics using the hook
-      const { engagementScore, cohesionScore, frictionLevel } = useSurveyMetrics(data.responses);
+      // Calculate metrics using the utility function
+      const { engagementScore, cohesionScore, frictionLevel } = calculateSurveyMetrics(data.responses);
 
       const submissionData = {
         department: data.department,
