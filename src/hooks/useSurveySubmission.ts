@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useSurveyMetrics } from './useSurveyMetrics';
 
 interface SurveySubmissionData {
   responses: Record<number, number>;
@@ -21,11 +22,8 @@ export const useSurveySubmission = () => {
       setIsSubmitting(true);
       setError(null);
 
-      // Calculate scores from responses
-      const responseValues = Object.values(data.responses);
-      const engagementScore = responseValues.reduce((acc, val) => acc + val, 0) / responseValues.length;
-      const cohesionScore = engagementScore; // For now, using same calculation
-      const frictionLevel = 5 - engagementScore; // Inverse relationship
+      // Calculate metrics using the hook
+      const { engagementScore, cohesionScore, frictionLevel } = useSurveyMetrics(data.responses);
 
       const submissionData = {
         department: data.department,
@@ -81,5 +79,28 @@ export const useSurveySubmission = () => {
     isSuccess,
     error,
     resetSubmission,
+  };
+};
+
+// Helper function for external use
+export const useSurveyMetrics = (responses: Record<number, number>) => {
+  const responseValues = Object.values(responses);
+  
+  if (responseValues.length === 0) {
+    return {
+      engagementScore: 0,
+      cohesionScore: 0,
+      frictionLevel: 0
+    };
+  }
+
+  const engagementScore = responseValues.reduce((acc, val) => acc + val, 0) / responseValues.length;
+  const cohesionScore = engagementScore;
+  const frictionLevel = 5 - engagementScore;
+
+  return {
+    engagementScore,
+    cohesionScore,
+    frictionLevel
   };
 };

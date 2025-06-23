@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import OnboardingModal from './OnboardingModal';
 import SubmitSurveyButton from './SubmitSurveyButton';
+import SurveyQuestionList from './SurveyQuestionList';
 import { useSurveySubmission } from '@/hooks/useSurveySubmission';
 
 interface SociometricTestScreenProps {
@@ -27,14 +28,6 @@ const questions = [
   "How effectively does your team communicate with each other?"
 ];
 
-const emojiScale = [
-  { emoji: '😞', label: 'Very Poor', value: 1 },
-  { emoji: '😕', label: 'Poor', value: 2 },
-  { emoji: '😐', label: 'Neutral', value: 3 },
-  { emoji: '🙂', label: 'Good', value: 4 },
-  { emoji: '😊', label: 'Excellent', value: 5 }
-];
-
 const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({ 
   onBack, 
   onContinue,
@@ -46,7 +39,6 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
   const { submitSurvey, isSubmitting, isSuccess, error, resetSubmission } = useSurveySubmission();
 
   useEffect(() => {
-    // Check if user has seen onboarding before (using localStorage)
     const hasSeenOnboarding = localStorage.getItem('growpoint-onboarding-seen');
     if (!hasSeenOnboarding) {
       setShowOnboarding(true);
@@ -86,7 +78,6 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
       });
       
       if (success) {
-        // Wait a moment to show success state, then continue
         setTimeout(() => {
           onContinue(responses);
         }, 2000);
@@ -94,7 +85,6 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
     }
   };
 
-  // Reset submission state when error occurs and user tries again
   useEffect(() => {
     if (error) {
       const timer = setTimeout(() => {
@@ -151,28 +141,12 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
             </CardHeader>
             
             <CardContent className="space-y-8">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold text-growpoint-dark mb-8">
-                  {questions[currentQuestion]}
-                </h3>
-                
-                <div className="flex justify-center space-x-4 mb-8">
-                  {emojiScale.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => handleResponse(currentQuestion, option.value)}
-                      className={`flex flex-col items-center p-4 rounded-lg border-2 transition-all duration-200 hover:scale-105 ${
-                        responses[currentQuestion] === option.value
-                          ? 'border-growpoint-primary bg-growpoint-soft shadow-lg'
-                          : 'border-growpoint-accent/30 hover:border-growpoint-accent bg-white'
-                      }`}
-                    >
-                      <span className="text-3xl mb-2">{option.emoji}</span>
-                      <span className="text-xs text-growpoint-dark font-medium">{option.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <SurveyQuestionList
+                questions={questions}
+                currentQuestion={currentQuestion}
+                responses={responses}
+                onResponse={handleResponse}
+              />
               
               <div className="flex justify-between">
                 <Button
