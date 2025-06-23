@@ -11,28 +11,9 @@ interface DepartmentResult {
   Department: string | null;
 }
 
-// Robust type guard to handle null/undefined and empty strings
-const isDepartmentString = (dept: string | null | undefined): dept is string => {
-  return typeof dept === 'string' && dept.trim().length > 0;
-};
-
-// Process RPC data consistently
-const processRpcData = (data: DepartmentRpcResult[]): string[] => {
-  return data
-    .map(item => item.department_name)
-    .filter(isDepartmentString)
-    .sort();
-};
-
-// Process fallback data consistently with deduplication
-const processFallbackData = (data: DepartmentResult[]): string[] => {
-  const departments = data
-    .map(item => item.Department?.trim())
-    .filter(isDepartmentString);
-  
-  // Deduplicate using Set
-  return [...new Set(departments)].sort();
-};
+// Standalone type guard that TypeScript can recognize
+const isNonEmptyString = (d: string | null | undefined): d is string =>
+  typeof d === 'string' && d.trim().length > 0;
 
 export const useDepartments = () => {
   const [departments, setDepartments] = useState<string[]>([]);
@@ -45,13 +26,13 @@ export const useDepartments = () => {
       setLoading(true);
       setError(null);
 
-      // Use RPC with explicit typing - provide both return type and params type
+      // Use RPC call without explicit generics to avoid constraint issues
       const { data: rpcData, error: rpcError } = await supabase
-        .rpc<DepartmentRpcResult[], void>('get_clean_departments');
+        .rpc('get_clean_departments');
 
       if (rpcError) {
         console.log('RPC call failed, using fallback method');
-        // Fallback to regular query if RPC doesn't exist
+        // Fallback to regular query
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('employees')
           .select('Department')
@@ -60,19 +41,26 @@ export const useDepartments = () => {
         if (fallbackError) throw fallbackError;
 
         if (fallbackData && Array.isArray(fallbackData)) {
-          const uniqueDepartments = processFallbackData(fallbackData as DepartmentResult[]);
-          setDepartments(uniqueDepartments);
+          // Separate map and filter steps for clarity
+          const trimmed = (fallbackData as DepartmentResult[])
+            .map(item => item.Department?.trim());
+          const filtered = trimmed.filter(isNonEmptyString);
+          const unique = Array.from(new Set(filtered)).sort();
+          setDepartments(unique);
         }
       } else {
         if (rpcData && Array.isArray(rpcData)) {
-          const departmentNames = processRpcData(rpcData as DepartmentRpcResult[]);
-          setDepartments(departmentNames);
+          // Separate map and filter for RPC data
+          const names = (rpcData as DepartmentRpcResult[])
+            .map(item => item.department_name);
+          const valid = names.filter(isNonEmptyString);
+          setDepartments(valid.sort());
         }
       }
     } catch (fetchError) {
       console.error('Error fetching departments:', fetchError);
       
-      // Try one more fallback approach
+      // Final fallback approach
       try {
         const { data: finalData, error: finalError } = await supabase
           .from('employees')
@@ -82,8 +70,11 @@ export const useDepartments = () => {
         if (finalError) throw finalError;
 
         if (finalData && Array.isArray(finalData)) {
-          const uniqueDepartments = processFallbackData(finalData as DepartmentResult[]);
-          setDepartments(uniqueDepartments);
+          const trimmed = (finalData as DepartmentResult[])
+            .map(item => item.Department?.trim());
+          const filtered = trimmed.filter(isNonEmptyString);
+          const unique = Array.from(new Set(filtered)).sort();
+          setDepartments(unique);
         }
       } catch (finalError) {
         console.error('Final error fetching departments:', finalError);
