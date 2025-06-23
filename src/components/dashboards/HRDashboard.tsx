@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -45,7 +46,14 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
   const processedData = React.useMemo(() => {
     if (!feedbackData.length) return { departments: [], totalEmployees: 0, avgEngagement: 0, highRiskTeams: 0 };
 
-    const departmentStats = feedbackData.reduce((acc, response) => {
+    let filteredData = feedbackData;
+    
+    // Apply department filter
+    if (selectedDepartment !== 'all') {
+      filteredData = feedbackData.filter(response => response.department === selectedDepartment);
+    }
+
+    const departmentStats = filteredData.reduce((acc, response) => {
       const dept = response.department;
       if (!acc[dept]) {
         acc[dept] = {
@@ -79,7 +87,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
     const highRiskTeams = departments.filter(dept => dept.friction > 2.5).length;
 
     return { departments, totalEmployees, avgEngagement, highRiskTeams };
-  }, [feedbackData]);
+  }, [feedbackData, selectedDepartment]);
 
   // Create trend data (mock for now since we need historical data)
   const companyTrendData = [
@@ -119,8 +127,13 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
         {/* Header with Back to Home button */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <div className="bg-growpoint-primary p-3 rounded-full">
-              <img src="/lovable-uploads/c3fcdded-87c5-4a78-b39e-2094a897384e.png" alt="GrowPoint" className="w-8 h-8" />
+            <div className="bg-growpoint-primary/10 p-3 rounded-full">
+              <img 
+                src="/lovable-uploads/d7cd3b1a-3e3c-49c7-8986-3d60c7901948.png" 
+                alt="GrowPoint" 
+                className="w-8 h-8 object-contain" 
+                style={{ background: 'transparent' }}
+              />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-growpoint-dark">HR Dashboard</h1>

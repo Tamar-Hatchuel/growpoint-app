@@ -20,7 +20,12 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         {/* Logo/Brand Section */}
         <div className="text-center mb-12 animate-fade-in">
           <div className="flex items-center justify-center mb-6">
-            <img src="/lovable-uploads/c3fcdded-87c5-4a78-b39e-2094a897384e.png" alt="GrowPoint" className="w-20 h-20" />
+            <img 
+              src="/lovable-uploads/d7cd3b1a-3e3c-49c7-8986-3d60c7901948.png" 
+              alt="GrowPoint" 
+              className="w-20 h-20 object-contain"
+              style={{ background: 'transparent' }}
+            />
           </div>
           
           <h1 className="text-5xl md:text-6xl font-bold text-growpoint-dark mb-4 tracking-tight">
