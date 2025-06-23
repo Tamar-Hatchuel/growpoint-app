@@ -11,6 +11,29 @@ interface DepartmentResult {
   Department: string | null;
 }
 
+// Robust type guard to handle null/undefined and empty strings
+const isDepartmentString = (dept: string | null | undefined): dept is string => {
+  return typeof dept === 'string' && dept.trim().length > 0;
+};
+
+// Process RPC data consistently
+const processRpcData = (data: DepartmentRpcResult[]): string[] => {
+  return data
+    .map(item => item.department_name)
+    .filter(isDepartmentString)
+    .sort();
+};
+
+// Process fallback data consistently with deduplication
+const processFallbackData = (data: DepartmentResult[]): string[] => {
+  const departments = data
+    .map(item => item.Department?.trim())
+    .filter(isDepartmentString);
+  
+  // Deduplicate using Set
+  return [...new Set(departments)].sort();
+};
+
 export const useDepartments = () => {
   const [departments, setDepartments] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +45,7 @@ export const useDepartments = () => {
       setLoading(true);
       setError(null);
 
-      // Use DISTINCT and TRIM to get clean, unique department names
+      // Use RPC with explicit typing
       const { data: rpcData, error: rpcError } = await supabase
         .rpc('get_clean_departments');
 
@@ -37,20 +60,12 @@ export const useDepartments = () => {
         if (fallbackError) throw fallbackError;
 
         if (fallbackData && Array.isArray(fallbackData)) {
-          const uniqueDepartments = [...new Set(
-            (fallbackData as DepartmentResult[])
-              .map(item => item.Department?.trim())
-              .filter((dept): dept is string => Boolean(dept))
-          )].sort();
-          
+          const uniqueDepartments = processFallbackData(fallbackData as DepartmentResult[]);
           setDepartments(uniqueDepartments);
         }
       } else {
         if (rpcData && Array.isArray(rpcData)) {
-          const departmentNames = (rpcData as DepartmentRpcResult[])
-            .map(item => item.department_name)
-            .filter((dept): dept is string => Boolean(dept))
-            .sort();
+          const departmentNames = processRpcData(rpcData as DepartmentRpcResult[]);
           setDepartments(departmentNames);
         }
       }
@@ -67,12 +82,7 @@ export const useDepartments = () => {
         if (finalError) throw finalError;
 
         if (finalData && Array.isArray(finalData)) {
-          const uniqueDepartments = [...new Set(
-            (finalData as DepartmentResult[])
-              .map(item => item.Department?.trim())
-              .filter((dept): dept is string => Boolean(dept))
-          )].sort();
-          
+          const uniqueDepartments = processFallbackData(finalData as DepartmentResult[]);
           setDepartments(uniqueDepartments);
         }
       } catch (finalError) {
