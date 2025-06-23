@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -26,15 +27,14 @@ export const useDepartments = () => {
       setError(null);
 
       const { data: rpcData, error: rpcError } = await supabase
-        .rpc<DepartmentRpcResult[], void>('get_clean_departments');
+        .rpc('get_clean_departments');
 
       if (rpcError) {
         console.log('RPC call failed, using fallback method');
         const { data: fallbackData, error: fallbackError } = await supabase
-          .from<DepartmentResult>('employees')
+          .from('employees')
           .select('Department')
-          .not('Department', 'is', null)
-          .returns<DepartmentResult[]>();
+          .not('Department', 'is', null);
 
         if (fallbackError) throw fallbackError;
 
@@ -70,10 +70,9 @@ export const useDepartments = () => {
 
       try {
         const { data: finalData, error: finalError } = await supabase
-          .from<DepartmentResult>('employees')
+          .from('employees')
           .select('Department')
-          .not('Department', 'is', null)
-          .returns<DepartmentResult[]>();
+          .not('Department', 'is', null);
 
         if (finalError) throw finalError;
 
