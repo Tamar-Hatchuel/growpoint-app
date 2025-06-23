@@ -45,9 +45,9 @@ export const useDepartments = () => {
       setLoading(true);
       setError(null);
 
-      // Use RPC with explicit typing
+      // Use RPC with explicit typing - provide both return type and params type
       const { data: rpcData, error: rpcError } = await supabase
-        .rpc<DepartmentRpcResult[]>('get_clean_departments');
+        .rpc<DepartmentRpcResult[], void>('get_clean_departments');
 
       if (rpcError) {
         console.log('RPC call failed, using fallback method');
