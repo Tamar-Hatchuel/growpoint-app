@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -26,26 +25,37 @@ export const useDepartments = () => {
       setLoading(true);
       setError(null);
 
-      // Use RPC call without explicit generics to avoid constraint issues
+      // RPC call with no generics to avoid constraint issues
       const { data: rpcData, error: rpcError } = await supabase
-        .rpc('get_clean_departments');
+        .rpc<DepartmentRpcResult[], void>('get_clean_departments');
 
       if (rpcError) {
         console.log('RPC call failed, using fallback method');
-        // Fallback to regular query
+        // Fallback to regular query with explicit generic
         const { data: fallbackData, error: fallbackError } = await supabase
-          .from('employees')
+          .from<DepartmentResult>('employees')
           .select('Department')
-          .not('Department', 'is', null);
+          .not('Department', 'is', null)
+          .returns<DepartmentResult[]>();
 
         if (fallbackError) throw fallbackError;
 
         if (fallbackData && Array.isArray(fallbackData)) {
-          // Separate map and filter steps for clarity
-          const trimmed = (fallbackData as DepartmentResult[])
+          // 1. Trim (string | undefined)[]
+          const trimmed: (string | undefined)[] = fallbackData
             .map(item => item.Department?.trim());
-          const filtered = trimmed.filter(isNonEmptyString);
-          const unique = Array.from(new Set(filtered)).sort();
+
+          // 2. Remove null/undefined
+          const nonNull: (string | undefined)[] = trimmed
+            .filter((d): d is string | undefined => d != null);
+
+          // 3. Remove empty strings
+          const nonEmpty: string[] = nonNull
+            .filter((d): d is string => d.trim().length > 0);
+
+          // 4. Dedupe and sort
+          const unique = Array.from(new Set(nonEmpty)).sort();
+
           setDepartments(unique);
         }
       } else {
@@ -53,7 +63,8 @@ export const useDepartments = () => {
           // Separate map and filter for RPC data
           const names = (rpcData as DepartmentRpcResult[])
             .map(item => item.department_name);
-          const valid = names.filter(isNonEmptyString);
+
+          const valid: string[] = names.filter(isNonEmptyString);
           setDepartments(valid.sort());
         }
       }
@@ -63,17 +74,22 @@ export const useDepartments = () => {
       // Final fallback approach
       try {
         const { data: finalData, error: finalError } = await supabase
-          .from('employees')
+          .from<DepartmentResult>('employees')
           .select('Department')
-          .not('Department', 'is', null);
+          .not('Department', 'is', null)
+          .returns<DepartmentResult[]>();
 
         if (finalError) throw finalError;
 
         if (finalData && Array.isArray(finalData)) {
-          const trimmed = (finalData as DepartmentResult[])
+          const trimmed: (string | undefined)[] = finalData
             .map(item => item.Department?.trim());
-          const filtered = trimmed.filter(isNonEmptyString);
-          const unique = Array.from(new Set(filtered)).sort();
+          const nonNull: (string | undefined)[] = trimmed
+            .filter((d): d is string | undefined => d != null);
+          const nonEmpty: string[] = nonNull
+            .filter((d): d is string => d.trim().length > 0);
+          const unique = Array.from(new Set(nonEmpty)).sort();
+
           setDepartments(unique);
         }
       } catch (finalError) {
