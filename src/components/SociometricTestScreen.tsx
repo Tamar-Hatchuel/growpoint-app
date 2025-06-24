@@ -110,11 +110,21 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
           <Button
             variant="ghost"
             onClick={onBack}
-            className="mb-6 text-growpoint-dark hover:text-growpoint-accent hover:bg-growpoint-soft/50"
+            className="mb-6 text-growpoint-dark hover:text-growpoint-accent hover:bg-growpoint-soft/50 min-h-[44px]"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
+
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            <img 
+              src="/lovable-uploads/d7cd3b1a-3e3c-49c7-8986-3d60c7901948.png" 
+              alt="GrowPoint" 
+              className="w-16 h-16 md:w-20 md:h-20 object-contain" 
+              style={{ background: 'transparent' }}
+            />
+          </div>
           
           {/* Progress Bar */}
           <div className="mb-6">
@@ -132,7 +142,7 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
           
           <Card className="border-growpoint-accent/20 shadow-lg">
             <CardHeader className="text-center pb-6">
-              <CardTitle className="text-2xl font-bold text-growpoint-dark">
+              <CardTitle className="text-xl md:text-2xl font-bold text-growpoint-dark">
                 Team Dynamics Survey
               </CardTitle>
               <CardDescription className="text-growpoint-dark/70">
@@ -148,12 +158,12 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
                 onResponse={handleResponse}
               />
               
-              <div className="flex justify-between">
+              <div className="flex flex-col sm:flex-row justify-between gap-4">
                 <Button
                   variant="outline"
                   onClick={handlePrevious}
                   disabled={currentQuestion === 0}
-                  className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft"
+                  className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft min-h-[44px] order-2 sm:order-1"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Previous
@@ -163,27 +173,29 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
                   <Button
                     onClick={handleNext}
                     disabled={!responses[currentQuestion]}
-                    className="bg-growpoint-primary hover:bg-growpoint-accent text-white"
+                    className="bg-growpoint-primary hover:bg-growpoint-accent text-white min-h-[44px] order-1 sm:order-2"
                   >
                     Next
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 ) : (
-                  <SubmitSurveyButton
-                    onSubmit={handleSubmit}
-                    isDisabled={!allQuestionsAnswered}
-                    isSubmitting={isSubmitting}
-                    isSuccess={isSuccess}
-                    hasError={!!error}
-                  />
+                  <div className="order-1 sm:order-2">
+                    <SubmitSurveyButton
+                      onSubmit={handleSubmit}
+                      isDisabled={!allQuestionsAnswered}
+                      isSubmitting={isSubmitting}
+                      isSuccess={isSuccess}
+                      hasError={!!error}
+                    />
+                  </div>
                 )}
               </div>
             </CardContent>
           </Card>
           
-          {/* Sticky Submit Button for Mobile */}
+          {/* Mobile Sticky Submit Button */}
           {allQuestionsAnswered && currentQuestion === questions.length - 1 && (
-            <div className="fixed bottom-4 left-4 right-4 md:hidden">
+            <div className="fixed bottom-4 left-4 right-4 sm:hidden z-50">
               <SubmitSurveyButton
                 onSubmit={handleSubmit}
                 isDisabled={!allQuestionsAnswered}

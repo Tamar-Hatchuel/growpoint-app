@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
-import { User, TrendingUp, Clock, Award } from 'lucide-react';
+import { User, TrendingUp, Clock, Award, Home } from 'lucide-react';
 import TeamHealthIndicator from '../TeamHealthIndicator';
 import FeedbackHistory from '../FeedbackHistory';
 
@@ -13,6 +14,7 @@ interface EmployeeDashboardProps {
     department?: string;
     employeeId?: string;
   };
+  onRestart?: () => void;
 }
 
 const personalMetrics = [
@@ -35,26 +37,48 @@ const chartConfig = {
   },
 };
 
-const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ userData }) => {
+const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ userData, onRestart }) => {
   const currentEngagement = 8.3;
   const currentCohesion = 4.5;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <div className="bg-growpoint-primary p-3 rounded-full">
-            <img src="/lovable-uploads/c3fcdded-87c5-4a78-b39e-2094a897384e.png" alt="GrowPoint" className="w-8 h-8" />
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div className="flex items-center gap-4">
+            <div className="bg-growpoint-primary p-3 rounded-full">
+              <img 
+                src="/lovable-uploads/d7cd3b1a-3e3c-49c7-8986-3d60c7901948.png" 
+                alt="GrowPoint" 
+                className="w-8 h-8 object-contain" 
+                style={{ background: 'transparent' }}
+              />
+            </div>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-growpoint-dark">
+                Welcome back, {userData.name || 'Employee'}!
+              </h1>
+              <p className="text-growpoint-dark/70">
+                {userData.department || 'Your Department'} • Employee Dashboard
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-growpoint-dark">Welcome back, {userData.name || 'Employee'}!</h1>
-            <p className="text-growpoint-dark/70">{userData.department || 'Your Department'} • Employee Dashboard</p>
-          </div>
+          
+          {onRestart && (
+            <Button
+              onClick={onRestart}
+              variant="outline"
+              className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft min-h-[44px]"
+            >
+              <Home className="w-4 h-4 mr-2" />
+              Return Home
+            </Button>
+          )}
         </div>
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
           <Card className="border-growpoint-accent/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-growpoint-dark">Current Engagement</CardTitle>
@@ -108,23 +132,23 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ userData }) => {
           <CardContent>
             <ChartContainer config={chartConfig} className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={personalMetrics}>
-                  <XAxis dataKey="month" />
-                  <YAxis />
+                <LineChart data={personalMetrics} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Line 
                     type="monotone" 
                     dataKey="engagement" 
                     stroke="var(--color-engagement)" 
                     strokeWidth={3} 
-                    dot={{ fill: "var(--color-engagement)" }} 
+                    dot={{ fill: "var(--color-engagement)", strokeWidth: 2, r: 4 }} 
                   />
                   <Line 
                     type="monotone" 
                     dataKey="cohesion" 
                     stroke="var(--color-cohesion)" 
                     strokeWidth={3} 
-                    dot={{ fill: "var(--color-cohesion)" }} 
+                    dot={{ fill: "var(--color-cohesion)", strokeWidth: 2, r: 4 }} 
                   />
                 </LineChart>
               </ResponsiveContainer>
