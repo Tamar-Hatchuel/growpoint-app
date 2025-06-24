@@ -94,25 +94,25 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
         <Button
           variant="ghost"
           onClick={onBack}
-          className="mb-6 text-growpoint-dark hover:text-growpoint-accent hover:bg-growpoint-soft/50 min-h-[44px]"
+          className="mb-6 text-growpoint-dark hover:text-growpoint-accent hover:bg-growpoint-soft/50"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
 
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
+        {/* Logo at the top */}
+        <div className="flex justify-center mb-6">
           <img 
             src="/lovable-uploads/d7cd3b1a-3e3c-49c7-8986-3d60c7901948.png" 
             alt="GrowPoint" 
-            className="w-16 h-16 md:w-20 md:h-20 object-contain" 
+            className="w-16 h-16 object-contain" 
             style={{ background: 'transparent' }}
           />
         </div>
         
         <Card className="border-growpoint-accent/20 shadow-lg">
           <CardHeader className="text-center pb-6">
-            <CardTitle className="text-xl md:text-2xl font-bold text-growpoint-dark">
+            <CardTitle className="text-2xl font-bold text-growpoint-dark">
               Identify Yourself
             </CardTitle>
             <CardDescription className="text-growpoint-dark/70">
@@ -143,7 +143,7 @@ const DepartmentSelectionScreen: React.FC<DepartmentSelectionScreenProps> = ({
               
               <Button
                 type="submit"
-                className="w-full bg-growpoint-primary hover:bg-growpoint-accent text-white font-semibold py-3 rounded-lg transition-all duration-200 transform hover:scale-[1.02] min-h-[48px]"
+                className="w-full bg-growpoint-primary hover:bg-growpoint-accent text-white font-semibold py-3 rounded-lg transition-all duration-200 transform hover:scale-[1.02]"
                 disabled={!isFormValid || isFormLoading}
               >
                 {isFormLoading ? 'Loading...' : 'Continue'}

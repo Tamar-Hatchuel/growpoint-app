@@ -14,12 +14,12 @@ const ThankYouScreen: React.FC<ThankYouScreenProps> = ({ onRestart }) => {
       <div className="w-full max-w-md animate-fade-in">
         <Card className="border-growpoint-accent/20 shadow-lg text-center">
           <CardHeader className="pb-6">
-            {/* Logo */}
-            <div className="flex justify-center mb-8">
+            {/* Logo at the top */}
+            <div className="flex justify-center mb-6">
               <img 
                 src="/lovable-uploads/d7cd3b1a-3e3c-49c7-8986-3d60c7901948.png" 
                 alt="GrowPoint" 
-                className="w-20 h-20 md:w-24 md:h-24 object-contain" 
+                className="w-20 h-20 object-contain" 
                 style={{ background: 'transparent' }}
               />
             </div>
@@ -29,7 +29,7 @@ const ThankYouScreen: React.FC<ThankYouScreenProps> = ({ onRestart }) => {
                 <CheckCircle className="w-12 h-12 text-green-600" />
               </div>
             </div>
-            <CardTitle className="text-xl md:text-2xl font-bold text-growpoint-dark mb-2">
+            <CardTitle className="text-2xl font-bold text-growpoint-dark mb-2">
               Thank You for Completing the Survey!
             </CardTitle>
           </CardHeader>
@@ -37,10 +37,10 @@ const ThankYouScreen: React.FC<ThankYouScreenProps> = ({ onRestart }) => {
           <CardContent>
             <div className="space-y-6">
               <div className="text-center space-y-3">
-                <p className="text-base md:text-lg text-growpoint-dark/80">
+                <p className="text-lg text-growpoint-dark/80">
                   Your feedback was submitted anonymously.
                 </p>
-                <p className="text-sm md:text-base text-growpoint-dark/70">
+                <p className="text-base text-growpoint-dark/70">
                   You are helping your team grow stronger every day.
                 </p>
               </div>
@@ -49,7 +49,7 @@ const ThankYouScreen: React.FC<ThankYouScreenProps> = ({ onRestart }) => {
               <Card className="bg-growpoint-accent/10 border-growpoint-accent/30">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
-                    <div className="bg-growpoint-accent/20 p-2 rounded-full flex-shrink-0">
+                    <div className="bg-growpoint-accent/20 p-2 rounded-full">
                       <Lightbulb className="w-5 h-5 text-growpoint-accent" />
                     </div>
                     <div className="text-left">
@@ -70,7 +70,7 @@ const ThankYouScreen: React.FC<ThankYouScreenProps> = ({ onRestart }) => {
               <div className="pt-4 space-y-3">
                 <Button
                   onClick={onRestart}
-                  className="w-full text-white font-semibold py-3 rounded-full flex items-center justify-center gap-2 min-h-[48px]"
+                  className="w-full text-white font-semibold py-3 rounded-full flex items-center justify-center gap-2"
                   style={{ backgroundColor: '#FFB4A2' }}
                 >
                   <Home className="w-4 h-4" />
