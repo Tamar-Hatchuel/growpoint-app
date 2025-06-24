@@ -37,8 +37,17 @@ const chartConfig = {
 };
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) => {
-  const { feedbackData, loading, error } = useFeedbackData();
   const userDepartment = userData.userDepartment || userData.department || 'Unknown';
+  
+  const { 
+    feedbackData, 
+    metrics, 
+    departmentMetrics, 
+    trendData, 
+    isLoading, 
+    error,
+    refetch 
+  } = useFeedbackData(userDepartment);
 
   // Filter data for this admin's department
   const departmentData = useMemo(() => {
@@ -109,9 +118,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
     return { average: Number(average.toFixed(1)), status, color };
   }, [departmentData]);
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-6 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-4 md:p-6 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-growpoint-primary mx-auto mb-4"></div>
           <p className="text-growpoint-dark">Loading dashboard data...</p>
@@ -122,26 +131,37 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-6 flex items-center justify-center">
-        <div className="text-center">
-          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600">Error loading dashboard data: {error}</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-4 md:p-6 flex items-center justify-center">
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-6 text-center">
+            <AlertTriangle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-red-800 mb-2">Failed to Load Dashboard</h3>
+            <p className="text-red-600 mb-4">Unable to fetch dashboard data. Please try again.</p>
+            <Button onClick={() => refetch()} variant="outline" className="border-red-300 text-red-700">
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
             <div className="bg-growpoint-primary p-3 rounded-full">
-              <img src="/lovable-uploads/c3fcdded-87c5-4a78-b39e-2094a897384e.png" alt="GrowPoint" className="w-8 h-8" />
+              <img 
+                src="/lovable-uploads/d7cd3b1a-3e3c-49c7-8986-3d60c7901948.png" 
+                alt="GrowPoint" 
+                className="w-8 h-8 object-contain" 
+                style={{ background: 'transparent' }}
+              />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-growpoint-dark">
+              <h1 className="text-2xl md:text-3xl font-bold text-growpoint-dark">
                 Team Summary – {userDepartment} Department
               </h1>
               <p className="text-growpoint-dark/70">{departmentData.length} responses • Department Analytics</p>
@@ -151,17 +171,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
           {onRestart && (
             <Button
               onClick={onRestart}
-              className="text-white font-semibold px-6 py-2 rounded-lg"
-              style={{ backgroundColor: '#FFB4A2' }}
+              variant="outline"
+              className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft min-h-[44px]"
             >
               <Home className="w-4 h-4 mr-2" />
-              Back to Home
+              Return Home
             </Button>
           )}
         </div>
 
         {/* KPI Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
           <Card className="border-growpoint-accent/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-growpoint-dark">Total Responses</CardTitle>
@@ -202,7 +222,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
         </div>
 
         {/* Charts Grid */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid lg:grid-cols-2 gap-6 md:gap-8 mb-8">
           {/* Engagement Over Time */}
           <Card className="border-growpoint-accent/20">
             <CardHeader>
@@ -271,7 +291,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
             <CardDescription>Team health assessment based on friction levels</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between p-6 bg-growpoint-soft/30 rounded-lg">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 bg-growpoint-soft/30 rounded-lg gap-4">
               <div>
                 <h3 className="text-lg font-semibold text-growpoint-dark mb-2">Current Status</h3>
                 <p className={`text-2xl font-bold ${frictionStats.color}`}>{frictionStats.status}</p>
@@ -279,7 +299,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
                   Average friction level: {frictionStats.average}/5.0
                 </p>
               </div>
-              <div className="text-right">
+              <div className="text-left md:text-right">
                 <div className="text-sm text-growpoint-dark/60 space-y-1">
                   <div>0–2.0: Healthy</div>
                   <div>2.1–3.5: At Risk</div>
@@ -289,6 +309,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
             </div>
           </CardContent>
         </Card>
+
+        {/* No Data State */}
+        {departmentData.length === 0 && (
+          <Card className="border-growpoint-accent/20">
+            <CardContent className="p-12 text-center">
+              <Building2 className="w-16 h-16 text-growpoint-accent/50 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-growpoint-dark mb-2">No Data Available</h3>
+              <p className="text-growpoint-dark/70 mb-4">
+                No survey responses found for {userDepartment} department.
+              </p>
+              <Button 
+                onClick={() => refetch()} 
+                variant="outline" 
+                className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft"
+              >
+                Refresh Data
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
