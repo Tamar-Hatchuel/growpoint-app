@@ -35,6 +35,8 @@ const chartConfig = {
 
 const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
+  const [dateRange, setDateRange] = useState<string>('last-30-days');
+  
   const { 
     metrics, 
     departmentMetrics, 
@@ -106,6 +108,8 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
         <DepartmentFilter
           selectedDepartment={selectedDepartment}
           onDepartmentChange={setSelectedDepartment}
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
         />
 
         {/* Loading State */}
