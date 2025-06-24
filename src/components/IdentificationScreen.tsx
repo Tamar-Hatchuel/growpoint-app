@@ -33,6 +33,16 @@ const IdentificationScreen: React.FC<IdentificationScreenProps> = ({ onBack, onC
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Welcome
         </Button>
+
+        {/* Logo at the top */}
+        <div className="flex justify-center mb-6">
+          <img 
+            src="/lovable-uploads/d7cd3b1a-3e3c-49c7-8986-3d60c7901948.png" 
+            alt="GrowPoint" 
+            className="w-16 h-16 object-contain" 
+            style={{ background: 'transparent' }}
+          />
+        </div>
         
         <Card className="border-growpoint-accent/20 shadow-lg">
           <CardHeader className="text-center pb-6">

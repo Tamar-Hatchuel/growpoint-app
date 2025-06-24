@@ -1,16 +1,15 @@
+
 import React from 'react';
 import IdentificationScreen from '@/components/IdentificationScreen';
 import DepartmentSelectionScreen from '@/components/DepartmentSelectionScreen';
 import HRChoiceScreen from '@/components/HRChoiceScreen';
 import AdminChoiceScreen from '@/components/AdminChoiceScreen';
 import SociometricTestScreen from '@/components/SociometricTestScreen';
-import OutcomeFocusScreen from '@/components/OutcomeFocusScreen';
-import InsightsScreen from '@/components/InsightsScreen';
 import ThankYouScreen from '@/components/ThankYouScreen';
 import HRDashboard from '@/components/dashboards/HRDashboard';
 import AdminDashboard from '@/components/dashboards/AdminDashboard';
 
-export type FlowStep = 'welcome' | 'identification' | 'department' | 'hr-choice' | 'admin-choice' | 'survey' | 'focus' | 'insights' | 'hr-dashboard' | 'manager-dashboard' | 'thank-you';
+export type FlowStep = 'welcome' | 'identification' | 'department' | 'hr-choice' | 'admin-choice' | 'survey' | 'hr-dashboard' | 'manager-dashboard' | 'thank-you';
 
 export interface UserData {
   name?: string;
@@ -22,7 +21,6 @@ export interface UserData {
   permission?: string;
   userDepartment?: string;
   surveyResponses?: Record<number, number>;
-  focusArea?: string;
 }
 
 interface FlowManagerProps {
@@ -74,18 +72,8 @@ const FlowManager: React.FC<FlowManagerProps> = ({
 
   const handleSurveyContinue = (responses: Record<number, number>) => {
     onUserDataUpdate({ surveyResponses: responses });
-    
-    // Check if user has "User" permission - go directly to thank you page
-    if (userData.permission === 'user') {
-      onStepChange('thank-you');
-    } else {
-      onStepChange('focus');
-    }
-  };
-
-  const handleFocusContinue = (focus: string) => {
-    onUserDataUpdate({ focusArea: focus });
-    onStepChange('insights');
+    // Always go to thank you screen after survey completion
+    onStepChange('thank-you');
   };
 
   const goBack = (step: FlowStep) => {
@@ -140,24 +128,6 @@ const FlowManager: React.FC<FlowManagerProps> = ({
           onBack={() => goBack('department')} 
           onContinue={handleSurveyContinue}
           userData={userData}
-        />
-      );
-    
-    case 'focus':
-      return (
-        <OutcomeFocusScreen 
-          onBack={() => goBack('survey')} 
-          onContinue={handleFocusContinue}
-        />
-      );
-    
-    case 'insights':
-      return (
-        <InsightsScreen 
-          onBack={() => goBack('focus')} 
-          onRestart={onRestart}
-          focusArea={userData.focusArea || 'maintain'}
-          department={userData.department || 'Team'}
         />
       );
 
