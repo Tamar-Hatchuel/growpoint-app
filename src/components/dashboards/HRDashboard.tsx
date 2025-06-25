@@ -96,7 +96,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
     { month: 'Jun', engagement: processedData.avgEngagement, retention: 97, satisfaction: 4.2 },
   ];
 
-  // Process data for AI insights
+  // Process data for AI insights with verbal comments
   const aiInsightsData = React.useMemo(() => {
     const filteredData = selectedDepartment === 'all' ? feedbackData : 
       feedbackData.filter(response => response.department === selectedDepartment);
@@ -107,7 +107,8 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
         avgCohesion: 0,
         avgFriction: 0,
         teamGoalDistribution: {},
-        departmentName: selectedDepartment === 'all' ? 'the organization' : selectedDepartment
+        departmentName: selectedDepartment === 'all' ? 'the organization' : selectedDepartment,
+        verbalComments: []
       };
     }
 
@@ -122,12 +123,31 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
       return acc;
     }, {} as { [key: string]: number });
 
+    // Collect verbal comments for AI analysis
+    const verbalComments: string[] = [];
+    filteredData.forEach(response => {
+      [
+        response.verbal_q1_comment,
+        response.verbal_q2_comment,
+        response.verbal_q3_comment,
+        response.verbal_q4_comment,
+        response.verbal_q5_comment,
+        response.verbal_q6_comment,
+        response.verbal_q7_comment
+      ].forEach(comment => {
+        if (comment && comment.trim()) {
+          verbalComments.push(comment.trim());
+        }
+      });
+    });
+
     return {
       avgEngagement,
       avgCohesion,
       avgFriction,
       teamGoalDistribution: goalDistribution,
-      departmentName: selectedDepartment === 'all' ? 'the organization' : selectedDepartment
+      departmentName: selectedDepartment === 'all' ? 'the organization' : selectedDepartment,
+      verbalComments
     };
   }, [feedbackData, selectedDepartment]);
 

@@ -118,7 +118,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
         avgCohesion: 0,
         avgFriction: 0,
         teamGoalDistribution: {},
-        departmentName: userDepartment
+        departmentName: userDepartment,
+        verbalComments: []
       };
     }
 
@@ -133,12 +134,31 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
       return acc;
     }, {} as { [key: string]: number });
 
+    // Collect verbal comments for AI analysis
+    const verbalComments: string[] = [];
+    departmentData.forEach(response => {
+      [
+        response.verbal_q1_comment,
+        response.verbal_q2_comment,
+        response.verbal_q3_comment,
+        response.verbal_q4_comment,
+        response.verbal_q5_comment,
+        response.verbal_q6_comment,
+        response.verbal_q7_comment
+      ].forEach(comment => {
+        if (comment && comment.trim()) {
+          verbalComments.push(comment.trim());
+        }
+      });
+    });
+
     return {
       avgEngagement,
       avgCohesion,
       avgFriction,
       teamGoalDistribution: goalDistribution,
-      departmentName: userDepartment
+      departmentName: userDepartment,
+      verbalComments
     };
   }, [departmentData, userDepartment]);
 
