@@ -28,6 +28,8 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
     setError(null);
     
     try {
+      console.log('Calling AI insights with data:', data);
+      
       // Call the Supabase Edge Function
       const { data: result, error: functionError } = await supabase.functions.invoke('generate-ai-insights', {
         body: {
@@ -39,6 +41,9 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
           verbalComments: data.verbalComments || []
         }
       });
+
+      console.log('AI insights result:', result);
+      console.log('AI insights error:', functionError);
 
       if (functionError) {
         throw new Error(functionError.message);
@@ -126,6 +131,9 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
                   <span className="font-medium">Unable to generate insights</span>
                 </div>
                 <p className="text-red-600 text-sm">{error}</p>
+                <p className="text-red-500 text-xs mt-2">
+                  Make sure your OpenAI API key is properly configured in Supabase.
+                </p>
               </div>
             ) : (
               <div className="bg-white rounded-lg p-4 mb-4" style={{ color: '#333446' }}>

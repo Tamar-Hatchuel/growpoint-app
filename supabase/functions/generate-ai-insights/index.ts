@@ -16,6 +16,12 @@ serve(async (req) => {
   }
 
   try {
+    console.log('OpenAI API Key available:', !!openAIApiKey);
+    
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not configured. Please add your OPENAI_API_KEY in Supabase Edge Functions settings.');
+    }
+
     const { 
       departmentName, 
       avgEngagement, 
@@ -24,6 +30,8 @@ serve(async (req) => {
       teamGoalDistribution,
       verbalComments = []
     } = await req.json();
+
+    console.log('Received data:', { departmentName, avgEngagement, avgCohesion, avgFriction, teamGoalDistribution, verbalComments: verbalComments.length });
 
     // Build the prompt for AI analysis
     let prompt = `Department: ${departmentName}
@@ -39,6 +47,8 @@ ${Object.entries(teamGoalDistribution).map(([goal, count]) => `- ${goal}: ${coun
     }
 
     prompt += `\n\nBased on the above team data, provide exactly 3 specific, actionable recommendations to improve team performance. Focus on the most critical areas that need attention. Keep each recommendation concise and practical.`;
+
+    console.log('Sending prompt to OpenAI:', prompt);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -60,11 +70,17 @@ ${Object.entries(teamGoalDistribution).map(([goal, count]) => `- ${goal}: ${coun
       }),
     });
 
+    console.log('OpenAI response status:', response.status);
+
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('OpenAI API error:', response.status, errorText);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('OpenAI response data:', data);
+    
     const insights = data.choices[0].message.content;
 
     return new Response(JSON.stringify({ insights }), {
