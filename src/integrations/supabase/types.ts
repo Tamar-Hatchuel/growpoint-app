@@ -50,6 +50,13 @@ export type Database = {
           session_id: string | null
           team_goal: string | null
           user_department: string | null
+          verbal_q1_comment: string | null
+          verbal_q2_comment: string | null
+          verbal_q3_comment: string | null
+          verbal_q4_comment: string | null
+          verbal_q5_comment: string | null
+          verbal_q6_comment: string | null
+          verbal_q7_comment: string | null
         }
         Insert: {
           cohesion_score?: number | null
@@ -64,6 +71,13 @@ export type Database = {
           session_id?: string | null
           team_goal?: string | null
           user_department?: string | null
+          verbal_q1_comment?: string | null
+          verbal_q2_comment?: string | null
+          verbal_q3_comment?: string | null
+          verbal_q4_comment?: string | null
+          verbal_q5_comment?: string | null
+          verbal_q6_comment?: string | null
+          verbal_q7_comment?: string | null
         }
         Update: {
           cohesion_score?: number | null
@@ -78,6 +92,13 @@ export type Database = {
           session_id?: string | null
           team_goal?: string | null
           user_department?: string | null
+          verbal_q1_comment?: string | null
+          verbal_q2_comment?: string | null
+          verbal_q3_comment?: string | null
+          verbal_q4_comment?: string | null
+          verbal_q5_comment?: string | null
+          verbal_q6_comment?: string | null
+          verbal_q7_comment?: string | null
         }
         Relationships: [
           {

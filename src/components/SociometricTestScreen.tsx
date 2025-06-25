@@ -34,6 +34,7 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
   userData = {}
 }) => {
   const [responses, setResponses] = useState<Record<number, number>>({});
+  const [verbalResponses, setVerbalResponses] = useState<Record<number, string>>({});
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { submitSurvey, isSubmitting, isSuccess, error, resetSubmission } = useSurveySubmission();
@@ -56,6 +57,13 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
     }));
   };
 
+  const handleVerbalResponse = (questionIndex: number, value: string) => {
+    setVerbalResponses(prev => ({
+      ...prev,
+      [questionIndex]: value
+    }));
+  };
+
   const handleNext = () => {
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
@@ -72,6 +80,7 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
     if (Object.keys(responses).length === questions.length) {
       const success = await submitSurvey({
         responses,
+        verbalResponses,
         department: userData.department || 'Unknown',
         userDepartment: userData.userDepartment,
         employeeId: userData.employeeId,
@@ -145,7 +154,9 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
                 questions={questions}
                 currentQuestion={currentQuestion}
                 responses={responses}
+                verbalResponses={verbalResponses}
                 onResponse={handleResponse}
+                onVerbalResponse={handleVerbalResponse}
               />
               
               <div className="flex justify-between">

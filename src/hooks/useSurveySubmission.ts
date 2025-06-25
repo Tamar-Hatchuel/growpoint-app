@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -5,6 +6,7 @@ import { calculateSurveyMetrics } from '@/utils/surveyMetrics';
 
 interface SurveySubmissionData {
   responses: Record<number, number>;
+  verbalResponses?: Record<number, string>;
   department: string;
   userDepartment?: string;
   employeeId?: string;
@@ -34,6 +36,14 @@ export const useSurveySubmission = () => {
         friction_level: frictionLevel,
         response_date: new Date().toISOString(),
         session_id: crypto.randomUUID(),
+        // Add verbal responses
+        verbal_q1_comment: data.verbalResponses?.[0] || null,
+        verbal_q2_comment: data.verbalResponses?.[1] || null,
+        verbal_q3_comment: data.verbalResponses?.[2] || null,
+        verbal_q4_comment: data.verbalResponses?.[3] || null,
+        verbal_q5_comment: data.verbalResponses?.[4] || null,
+        verbal_q6_comment: data.verbalResponses?.[5] || null,
+        verbal_q7_comment: data.verbalResponses?.[6] || null,
       };
 
       const { error: insertError } = await supabase

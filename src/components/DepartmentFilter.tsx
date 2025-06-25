@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent } from '@/components/ui/card';
-import { Calendar, Filter } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { useDepartmentFilter } from '@/hooks/useDepartmentFilter';
 
 interface DepartmentFilterProps {
   selectedDepartment: string;
@@ -11,69 +11,68 @@ interface DepartmentFilterProps {
   onDateRangeChange: (range: string) => void;
 }
 
-const departments = [
-  { value: 'all', label: 'All Departments' },
-  { value: 'engineering', label: 'Engineering' },
-  { value: 'sales', label: 'Sales' },
-  { value: 'marketing', label: 'Marketing' },
-  { value: 'support', label: 'Support' },
-  { value: 'operations', label: 'Operations' },
-];
-
-const dateRanges = [
-  { value: 'last-7-days', label: 'Last 7 days' },
-  { value: 'last-30-days', label: 'Last 30 days' },
-  { value: 'last-90-days', label: 'Last 3 months' },
-  { value: 'last-6-months', label: 'Last 6 months' },
-  { value: 'last-year', label: 'Last year' },
-];
-
 const DepartmentFilter: React.FC<DepartmentFilterProps> = ({
   selectedDepartment,
   onDepartmentChange,
   dateRange,
-  onDateRangeChange,
+  onDateRangeChange
 }) => {
+  const { departments, loading, error } = useDepartmentFilter();
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-4 bg-white/50 backdrop-blur-sm rounded-lg p-4 border border-growpoint-accent/20">
+        <div className="animate-pulse">Loading filters...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center gap-4 bg-white/50 backdrop-blur-sm rounded-lg p-4 border border-growpoint-accent/20">
+        <div className="text-red-600">Error loading departments</div>
+      </div>
+    );
+  }
+
   return (
-    <Card className="border-growpoint-accent/20">
-      <CardContent className="p-4">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-growpoint-primary" />
-            <span className="text-sm font-medium text-growpoint-dark">Filters:</span>
-          </div>
-          
-          <Select value={selectedDepartment} onValueChange={onDepartmentChange}>
-            <SelectTrigger className="w-40 border-growpoint-accent/30">
-              <SelectValue placeholder="Department" />
-            </SelectTrigger>
-            <SelectContent className="bg-white border-growpoint-accent/30">
-              {departments.map((dept) => (
-                <SelectItem key={dept.value} value={dept.value}>
-                  {dept.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-growpoint-primary" />
-            <Select value={dateRange} onValueChange={onDateRangeChange}>
-              <SelectTrigger className="w-36 border-growpoint-accent/30">
-                <SelectValue placeholder="Time range" />
-              </SelectTrigger>
-              <SelectContent className="bg-white border-growpoint-accent/30">
-                {dateRanges.map((range) => (
-                  <SelectItem key={range.value} value={range.value}>
-                    {range.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex items-center gap-4 bg-white/50 backdrop-blur-sm rounded-lg p-4 border border-growpoint-accent/20">
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="department-filter" className="text-sm font-medium text-growpoint-dark">
+          Filter by Department
+        </Label>
+        <Select value={selectedDepartment} onValueChange={onDepartmentChange}>
+          <SelectTrigger id="department-filter" className="w-48 border-growpoint-accent/30">
+            <SelectValue placeholder="All Departments" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Departments</SelectItem>
+            {departments.map((dept) => (
+              <SelectItem key={dept} value={dept}>
+                {dept}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="date-range-filter" className="text-sm font-medium text-growpoint-dark">
+          Time Period
+        </Label>
+        <Select value={dateRange} onValueChange={onDateRangeChange}>
+          <SelectTrigger id="date-range-filter" className="w-48 border-growpoint-accent/30">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="last-7-days">Last 7 Days</SelectItem>
+            <SelectItem value="last-30-days">Last 30 Days</SelectItem>
+            <SelectItem value="last-90-days">Last 90 Days</SelectItem>
+            <SelectItem value="all-time">All Time</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
   );
 };
 
