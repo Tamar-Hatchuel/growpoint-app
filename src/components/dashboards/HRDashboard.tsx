@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -8,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import TeamHealthIndicator from '../TeamHealthIndicator';
 import DepartmentFilter from '../DepartmentFilter';
 import { useFeedbackData } from '@/hooks/useFeedbackData';
+import AIInsightsPanel from '@/components/AIInsightsPanel';
+import VerbalFeedbackPanel from '@/components/VerbalFeedbackPanel';
 
 interface HRDashboardProps {
   userData: {
@@ -94,6 +95,47 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
     { month: 'May', engagement: processedData.avgEngagement - 0.1, retention: 94, satisfaction: 4.0 },
     { month: 'Jun', engagement: processedData.avgEngagement, retention: 97, satisfaction: 4.2 },
   ];
+
+  // Process data for AI insights
+  const aiInsightsData = React.useMemo(() => {
+    const filteredData = selectedDepartment === 'all' ? feedbackData : 
+      feedbackData.filter(response => response.department === selectedDepartment);
+    
+    if (filteredData.length === 0) {
+      return {
+        avgEngagement: 0,
+        avgCohesion: 0,
+        avgFriction: 0,
+        teamGoalDistribution: {},
+        departmentName: selectedDepartment === 'all' ? 'the organization' : selectedDepartment
+      };
+    }
+
+    const avgEngagement = filteredData.reduce((sum, r) => sum + (r.engagement_score || 0), 0) / filteredData.length;
+    const avgCohesion = filteredData.reduce((sum, r) => sum + (r.cohesion_score || 0), 0) / filteredData.length;
+    const avgFriction = filteredData.reduce((sum, r) => sum + (r.friction_level || 0), 0) / filteredData.length;
+    
+    const goalDistribution = filteredData.reduce((acc, r) => {
+      if (r.team_goal) {
+        acc[r.team_goal] = (acc[r.team_goal] || 0) + 1;
+      }
+      return acc;
+    }, {} as { [key: string]: number });
+
+    return {
+      avgEngagement,
+      avgCohesion,
+      avgFriction,
+      teamGoalDistribution: goalDistribution,
+      departmentName: selectedDepartment === 'all' ? 'the organization' : selectedDepartment
+    };
+  }, [feedbackData, selectedDepartment]);
+
+  // Filter feedback data for verbal feedback panel
+  const verbalFeedbackData = React.useMemo(() => {
+    return selectedDepartment === 'all' ? feedbackData : 
+      feedbackData.filter(response => response.department === selectedDepartment);
+  }, [feedbackData, selectedDepartment]);
 
   if (loading) {
     return (
@@ -325,6 +367,18 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
             </ChartContainer>
           </CardContent>
         </Card>
+
+        {/* AI Insights Panel */}
+        <AIInsightsPanel 
+          data={aiInsightsData}
+          isHR={true}
+        />
+
+        {/* Verbal Feedback Panel */}
+        <VerbalFeedbackPanel 
+          feedbackData={verbalFeedbackData}
+          departmentName={selectedDepartment === 'all' ? undefined : selectedDepartment}
+        />
       </div>
     </div>
   );

@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -6,6 +5,8 @@ import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, ResponsiveContainer }
 import { Building2, TrendingUp, AlertTriangle, Home, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useFeedbackData } from '@/hooks/useFeedbackData';
+import AIInsightsPanel from '@/components/AIInsightsPanel';
+import VerbalFeedbackPanel from '@/components/VerbalFeedbackPanel';
 
 interface AdminDashboardProps {
   userData: {
@@ -108,6 +109,38 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
     
     return { average: Number(average.toFixed(1)), status, color };
   }, [departmentData]);
+
+  // Process data for AI insights
+  const aiInsightsData = React.useMemo(() => {
+    if (departmentData.length === 0) {
+      return {
+        avgEngagement: 0,
+        avgCohesion: 0,
+        avgFriction: 0,
+        teamGoalDistribution: {},
+        departmentName: userDepartment
+      };
+    }
+
+    const avgEngagement = departmentData.reduce((sum, r) => sum + (r.engagement_score || 0), 0) / departmentData.length;
+    const avgCohesion = departmentData.reduce((sum, r) => sum + (r.cohesion_score || 0), 0) / departmentData.length;
+    const avgFriction = departmentData.reduce((sum, r) => sum + (r.friction_level || 0), 0) / departmentData.length;
+    
+    const goalDistribution = departmentData.reduce((acc, r) => {
+      if (r.team_goal) {
+        acc[r.team_goal] = (acc[r.team_goal] || 0) + 1;
+      }
+      return acc;
+    }, {} as { [key: string]: number });
+
+    return {
+      avgEngagement,
+      avgCohesion,
+      avgFriction,
+      teamGoalDistribution: goalDistribution,
+      departmentName: userDepartment
+    };
+  }, [departmentData, userDepartment]);
 
   if (loading) {
     return (
@@ -289,6 +322,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
             </div>
           </CardContent>
         </Card>
+
+        {/* AI Insights Panel */}
+        <AIInsightsPanel 
+          data={aiInsightsData}
+          isHR={false}
+        />
+
+        {/* Verbal Feedback Panel */}
+        <VerbalFeedbackPanel 
+          feedbackData={departmentData}
+          departmentName={userDepartment}
+        />
       </div>
     </div>
   );
