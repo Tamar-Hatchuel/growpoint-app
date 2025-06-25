@@ -1,13 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import OnboardingModal from './OnboardingModal';
-import SubmitSurveyButton from './SubmitSurveyButton';
-import SurveyQuestionList from './SurveyQuestionList';
-import { useSurveySubmission } from '@/hooks/useSurveySubmission';
-import { trackSurveyStep, trackSurveyComplete, trackSurveyAbandon, trackButtonClick, trackFormSubmission } from '@/utils/analytics';
+import SurveyCard from './survey/SurveyCard';
+import StickySubmitButton from './survey/StickySubmitButton';
+import { useSurveyState } from './survey/useSurveyState';
+import { trackSurveyStep, trackSurveyAbandon, trackButtonClick } from '@/utils/analytics';
 
 interface SociometricTestScreenProps {
   onBack: () => void;
@@ -34,20 +33,22 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
   onContinue,
   userData = {}
 }) => {
-  const [responses, setResponses] = useState<Record<number, number>>({});
-  const [verbalResponses, setVerbalResponses] = useState<Record<number, string>>({});
-  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const { submitSurvey, isSubmitting, isSuccess, error, resetSubmission } = useSurveySubmission();
-
-  // Track page abandonment on component unmount
-  useEffect(() => {
-    return () => {
-      if (Object.keys(responses).length < questions.length) {
-        trackSurveyAbandon(`question_${currentQuestion + 1}`, userData.department);
-      }
-    };
-  }, [currentQuestion, responses, userData.department]);
+  
+  const {
+    responses,
+    verbalResponses,
+    currentQuestion,
+    allQuestionsAnswered,
+    isSubmitting,
+    isSuccess,
+    error,
+    handleResponse,
+    handleVerbalResponse,
+    handleNext,
+    handlePrevious,
+    handleSubmit
+  } = useSurveyState(questions, userData, onContinue);
 
   useEffect(() => {
     const hasSeenOnboarding = localStorage.getItem('growpoint-onboarding-seen');
@@ -61,78 +62,11 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
     trackSurveyStep('onboarding_complete', userData.department);
   };
 
-  const handleResponse = (questionIndex: number, value: number) => {
-    setResponses(prev => ({
-      ...prev,
-      [questionIndex]: value
-    }));
-    
-    // Track question completion
-    trackSurveyStep(`question_${questionIndex + 1}_answered`, userData.department);
-  };
-
-  const handleVerbalResponse = (questionIndex: number, value: string) => {
-    setVerbalResponses(prev => ({
-      ...prev,
-      [questionIndex]: value
-    }));
-  };
-
-  const handleNext = () => {
-    trackButtonClick('Next Question', `question_${currentQuestion + 1}`);
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      trackSurveyStep(`question_${currentQuestion + 2}_viewed`, userData.department);
-    }
-  };
-
-  const handlePrevious = () => {
-    trackButtonClick('Previous Question', `question_${currentQuestion + 1}`);
-    if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1);
-    }
-  };
-
-  const handleSubmit = async () => {
-    trackButtonClick('Submit Survey', 'survey_completion');
-    
-    if (Object.keys(responses).length === questions.length) {
-      const success = await submitSurvey({
-        responses,
-        verbalResponses,
-        department: userData.department || 'Unknown',
-        userDepartment: userData.userDepartment,
-        employeeId: userData.employeeId,
-      });
-      
-      trackFormSubmission('survey_submission', success);
-      
-      if (success) {
-        trackSurveyComplete(userData.department);
-        setTimeout(() => {
-          onContinue(responses);
-        }, 2000);
-      }
-    }
-  };
-
   const handleBack = () => {
     trackButtonClick('Back', 'survey_screen');
     trackSurveyAbandon(`question_${currentQuestion + 1}`, userData.department);
     onBack();
   };
-
-  useEffect(() => {
-    if (error) {
-      const timer = setTimeout(() => {
-        resetSubmission();
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [error, resetSubmission]);
-
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
-  const allQuestionsAnswered = Object.keys(responses).length === questions.length;
 
   return (
     <>
@@ -153,85 +87,30 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
             Back
           </Button>
           
-          {/* Progress Bar */}
-          <div className="mb-6">
-            <div className="flex justify-between text-sm text-growpoint-dark/70 mb-2">
-              <span>Question {currentQuestion + 1} of {questions.length}</span>
-              <span>{Math.round(progress)}% Complete</span>
-            </div>
-            <div className="w-full bg-growpoint-soft/50 rounded-full h-2">
-              <div 
-                className="bg-growpoint-primary h-2 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
+          <SurveyCard
+            questions={questions}
+            currentQuestion={currentQuestion}
+            responses={responses}
+            verbalResponses={verbalResponses}
+            onResponse={handleResponse}
+            onVerbalResponse={handleVerbalResponse}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            isSuccess={isSuccess}
+            hasError={!!error}
+          />
           
-          <Card className="border-growpoint-accent/20 shadow-lg">
-            <CardHeader className="text-center pb-6">
-              <CardTitle className="text-2xl font-bold text-growpoint-dark">
-                Team Dynamics Survey
-              </CardTitle>
-              <CardDescription className="text-growpoint-dark/70">
-                Your responses are completely anonymous and help us understand team dynamics
-              </CardDescription>
-            </CardHeader>
-            
-            <CardContent className="space-y-8">
-              <SurveyQuestionList
-                questions={questions}
-                currentQuestion={currentQuestion}
-                responses={responses}
-                verbalResponses={verbalResponses}
-                onResponse={handleResponse}
-                onVerbalResponse={handleVerbalResponse}
-              />
-              
-              <div className="flex justify-between">
-                <Button
-                  variant="outline"
-                  onClick={handlePrevious}
-                  disabled={currentQuestion === 0}
-                  className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Previous
-                </Button>
-                
-                {currentQuestion < questions.length - 1 ? (
-                  <Button
-                    onClick={handleNext}
-                    disabled={!responses[currentQuestion]}
-                    className="bg-growpoint-primary hover:bg-growpoint-accent text-white"
-                  >
-                    Next
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                ) : (
-                  <SubmitSurveyButton
-                    onSubmit={handleSubmit}
-                    isDisabled={!allQuestionsAnswered}
-                    isSubmitting={isSubmitting}
-                    isSuccess={isSuccess}
-                    hasError={!!error}
-                  />
-                )}
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Sticky Submit Button for Mobile */}
-          {allQuestionsAnswered && currentQuestion === questions.length - 1 && (
-            <div className="fixed bottom-4 left-4 right-4 md:hidden">
-              <SubmitSurveyButton
-                onSubmit={handleSubmit}
-                isDisabled={!allQuestionsAnswered}
-                isSubmitting={isSubmitting}
-                isSuccess={isSuccess}
-                hasError={!!error}
-              />
-            </div>
-          )}
+          <StickySubmitButton
+            allQuestionsAnswered={allQuestionsAnswered}
+            currentQuestion={currentQuestion}
+            totalQuestions={questions.length}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            isSuccess={isSuccess}
+            hasError={!!error}
+          />
         </div>
       </div>
     </>
