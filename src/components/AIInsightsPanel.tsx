@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Brain, RefreshCw, Lightbulb, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { trackAIInsightsGeneration, trackButtonClick } from '@/utils/analytics';
 
 interface AIInsightsPanelProps {
   data: {
@@ -30,6 +31,9 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
     try {
       console.log('Calling AI insights with data:', data);
       
+      // Track the insights generation attempt
+      trackButtonClick('Generate AI Insights', data.departmentName || 'unknown');
+      
       // Call the Supabase Edge Function
       const { data: result, error: functionError } = await supabase.functions.invoke('generate-ai-insights', {
         body: {
@@ -52,6 +56,8 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
       if (result?.insights) {
         setInsights(result.insights);
         setHasGenerated(true);
+        // Track successful insights generation
+        trackAIInsightsGeneration(data.departmentName);
       } else {
         throw new Error('No insights received from AI service');
       }
@@ -63,6 +69,11 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleRegenerate = () => {
+    trackButtonClick('Regenerate AI Insights', data.departmentName || 'unknown');
+    generateInsights();
   };
 
   // Check if there's enough data to generate insights
@@ -142,7 +153,7 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
             )}
             
             <Button
-              onClick={generateInsights}
+              onClick={handleRegenerate}
               disabled={isLoading}
               variant="outline"
               className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft"

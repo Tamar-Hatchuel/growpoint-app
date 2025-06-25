@@ -7,6 +7,7 @@ import OnboardingModal from './OnboardingModal';
 import SubmitSurveyButton from './SubmitSurveyButton';
 import SurveyQuestionList from './SurveyQuestionList';
 import { useSurveySubmission } from '@/hooks/useSurveySubmission';
+import { trackSurveyStep, trackSurveyComplete, trackSurveyAbandon, trackButtonClick, trackFormSubmission } from '@/utils/analytics';
 
 interface SociometricTestScreenProps {
   onBack: () => void;
@@ -39,6 +40,15 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
   const [showOnboarding, setShowOnboarding] = useState(false);
   const { submitSurvey, isSubmitting, isSuccess, error, resetSubmission } = useSurveySubmission();
 
+  // Track page abandonment on component unmount
+  useEffect(() => {
+    return () => {
+      if (Object.keys(responses).length < questions.length) {
+        trackSurveyAbandon(`question_${currentQuestion + 1}`, userData.department);
+      }
+    };
+  }, [currentQuestion, responses, userData.department]);
+
   useEffect(() => {
     const hasSeenOnboarding = localStorage.getItem('growpoint-onboarding-seen');
     if (!hasSeenOnboarding) {
@@ -48,6 +58,7 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
 
   const handleOnboardingStart = () => {
     localStorage.setItem('growpoint-onboarding-seen', 'true');
+    trackSurveyStep('onboarding_complete', userData.department);
   };
 
   const handleResponse = (questionIndex: number, value: number) => {
@@ -55,6 +66,9 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
       ...prev,
       [questionIndex]: value
     }));
+    
+    // Track question completion
+    trackSurveyStep(`question_${questionIndex + 1}_answered`, userData.department);
   };
 
   const handleVerbalResponse = (questionIndex: number, value: string) => {
@@ -65,18 +79,23 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
   };
 
   const handleNext = () => {
+    trackButtonClick('Next Question', `question_${currentQuestion + 1}`);
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
+      trackSurveyStep(`question_${currentQuestion + 2}_viewed`, userData.department);
     }
   };
 
   const handlePrevious = () => {
+    trackButtonClick('Previous Question', `question_${currentQuestion + 1}`);
     if (currentQuestion > 0) {
       setCurrentQuestion(currentQuestion - 1);
     }
   };
 
   const handleSubmit = async () => {
+    trackButtonClick('Submit Survey', 'survey_completion');
+    
     if (Object.keys(responses).length === questions.length) {
       const success = await submitSurvey({
         responses,
@@ -86,12 +105,21 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
         employeeId: userData.employeeId,
       });
       
+      trackFormSubmission('survey_submission', success);
+      
       if (success) {
+        trackSurveyComplete(userData.department);
         setTimeout(() => {
           onContinue(responses);
         }, 2000);
       }
     }
+  };
+
+  const handleBack = () => {
+    trackButtonClick('Back', 'survey_screen');
+    trackSurveyAbandon(`question_${currentQuestion + 1}`, userData.department);
+    onBack();
   };
 
   useEffect(() => {
@@ -118,7 +146,7 @@ const SociometricTestScreen: React.FC<SociometricTestScreenProps> = ({
         <div className="w-full max-w-2xl animate-fade-in">
           <Button
             variant="ghost"
-            onClick={onBack}
+            onClick={handleBack}
             className="mb-6 text-growpoint-dark hover:text-growpoint-accent hover:bg-growpoint-soft/50"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />

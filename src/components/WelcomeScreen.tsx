@@ -3,12 +3,19 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp, Users, Target, BarChart3 } from 'lucide-react';
+import { trackButtonClick, trackSurveyStart } from '@/utils/analytics';
 
 interface WelcomeScreenProps {
   onStart: () => void;
 }
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
+  const handleStart = () => {
+    trackButtonClick('Start Survey', 'Welcome Screen');
+    trackSurveyStart();
+    onStart();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 relative overflow-hidden">
       {/* Floating Background Elements */}
@@ -78,7 +85,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
         {/* CTA Button */}
         <div className="animate-scale-in" style={{ animationDelay: '0.8s' }}>
           <Button
-            onClick={onStart}
+            onClick={handleStart}
             className="bg-growpoint-primary hover:bg-growpoint-accent text-white font-bold text-lg px-12 py-4 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
           >
             Start Your Survey

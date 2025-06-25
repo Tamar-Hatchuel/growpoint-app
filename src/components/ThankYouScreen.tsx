@@ -3,12 +3,18 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Heart, Lightbulb, Home } from 'lucide-react';
+import { trackButtonClick } from '@/utils/analytics';
 
 interface ThankYouScreenProps {
   onRestart: () => void;
 }
 
 const ThankYouScreen: React.FC<ThankYouScreenProps> = ({ onRestart }) => {
+  const handleRestart = () => {
+    trackButtonClick('Return to Home', 'thank_you_screen');
+    onRestart();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-card-bg flex items-center justify-center p-4">
       <div className="w-full max-w-md animate-fade-in">
@@ -69,7 +75,7 @@ const ThankYouScreen: React.FC<ThankYouScreenProps> = ({ onRestart }) => {
               
               <div className="pt-4 space-y-3">
                 <Button
-                  onClick={onRestart}
+                  onClick={handleRestart}
                   className="w-full text-white font-semibold py-3 rounded-full flex items-center justify-center gap-2"
                   style={{ backgroundColor: '#FFB4A2' }}
                 >
