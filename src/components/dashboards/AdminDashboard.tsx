@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -190,8 +191,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <div className="bg-growpoint-primary p-3 rounded-full">
-              <img src="/lovable-uploads/c3fcdded-87c5-4a78-b39e-2094a897384e.png" alt="GrowPoint" className="w-8 h-8" />
+            <div className="p-3">
+              <img 
+                src="/lovable-uploads/d7cd3b1a-3e3c-49c7-8986-3d60c7901948.png" 
+                alt="GrowPoint" 
+                className="w-8 h-8 object-contain"
+                style={{ background: 'transparent' }}
+              />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-growpoint-dark">
@@ -236,7 +242,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
                 {departmentData.length > 0 
                   ? (departmentData.reduce((sum, r) => sum + (r.engagement_score || 0), 0) / departmentData.length).toFixed(1)
                   : 0
-                }/10
+                }/5
               </div>
               <p className="text-xs text-green-600">Department average</p>
             </CardContent>
@@ -270,7 +276,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={engagementOverTime}>
                     <XAxis dataKey="week" />
-                    <YAxis domain={[0, 10]} />
+                    <YAxis domain={[0, 5]} />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Bar dataKey="engagement" fill="var(--color-engagement)" radius={[4, 4, 0, 0]} />
                   </BarChart>

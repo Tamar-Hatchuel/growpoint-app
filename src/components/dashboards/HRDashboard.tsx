@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
-import { Building2, Users, TrendingUp, AlertTriangle, Target, Award, Home } from 'lucide-react';
+import { Building2, Users, TrendingUp, AlertTriangle, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import TeamHealthIndicator from '../TeamHealthIndicator';
 import DepartmentFilter from '../DepartmentFilter';
@@ -85,6 +86,30 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
 
     return { departments, totalEmployees, avgEngagement, highRiskTeams };
   }, [feedbackData]);
+
+  // Calculate department-specific engagement score with status
+  const departmentEngagementStats = React.useMemo(() => {
+    const filteredData = selectedDepartment === 'all' ? feedbackData : 
+      feedbackData.filter(response => response.department === selectedDepartment);
+    
+    if (filteredData.length === 0) return { average: 0, status: 'No Data', color: 'text-gray-500' };
+    
+    const totalEngagement = filteredData.reduce((sum, response) => sum + (response.engagement_score || 0), 0);
+    const average = totalEngagement / filteredData.length;
+    
+    let status = 'Excellent';
+    let color = 'text-green-600';
+    
+    if (average < 2.5) {
+      status = 'Needs Attention';
+      color = 'text-red-600';
+    } else if (average < 4.0) {
+      status = 'At Risk';
+      color = 'text-yellow-600';
+    }
+    
+    return { average: Number(average.toFixed(1)), status, color };
+  }, [feedbackData, selectedDepartment]);
 
   // Create trend data (mock for now since we need historical data)
   const companyTrendData = [
@@ -225,7 +250,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
         )}
 
         {/* Company Overview Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="border-growpoint-accent/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-growpoint-dark">Total Responses</CardTitle>
@@ -250,12 +275,12 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
 
           <Card className="border-growpoint-accent/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-growpoint-dark">Avg Engagement</CardTitle>
+              <CardTitle className="text-sm font-medium text-growpoint-dark">Engagement Score</CardTitle>
               <TrendingUp className="h-4 w-4 text-growpoint-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-growpoint-dark">{processedData.avgEngagement || 0}/10</div>
-              <p className="text-xs text-green-600">Company average</p>
+              <div className="text-2xl font-bold text-growpoint-dark">{departmentEngagementStats.average}/5</div>
+              <p className={`text-xs font-medium ${departmentEngagementStats.color}`}>{departmentEngagementStats.status}</p>
             </CardContent>
           </Card>
 
@@ -267,19 +292,6 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
             <CardContent>
               <div className="text-2xl font-bold text-growpoint-dark">{processedData.highRiskTeams}</div>
               <p className="text-xs text-yellow-600">High friction levels</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-growpoint-accent/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-growpoint-dark">Focus Areas</CardTitle>
-              <Target className="h-4 w-4 text-growpoint-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-growpoint-dark">
-                {feedbackData.filter(r => r.team_goal === 'Resolve').length}
-              </div>
-              <p className="text-xs text-red-600">Need resolution</p>
             </CardContent>
           </Card>
         </div>
@@ -305,14 +317,14 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
                 <Building2 className="w-5 h-5" />
                 Engagement by Department
               </CardTitle>
-              <CardDescription>Current engagement levels across all departments</CardDescription>
+              <CardDescription>Current engagement levels across all departments (1-5 scale)</CardDescription>
             </CardHeader>
             <CardContent>
               <ChartContainer config={chartConfig} className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={processedData.departments}>
                     <XAxis dataKey="department" angle={-45} textAnchor="end" height={80} />
-                    <YAxis domain={[0, 10]} />
+                    <YAxis domain={[0, 5]} />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Bar dataKey="engagement" fill="var(--color-engagement)" radius={[4, 4, 0, 0]} />
                   </BarChart>

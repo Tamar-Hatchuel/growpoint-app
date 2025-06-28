@@ -110,6 +110,36 @@ export type Database = {
           },
         ]
       }
+      leads: {
+        Row: {
+          company_name: string
+          full_name: string
+          id: string
+          submitted_at: string
+          team_challenges: string | null
+          team_size: string | null
+          work_email: string
+        }
+        Insert: {
+          company_name: string
+          full_name: string
+          id?: string
+          submitted_at?: string
+          team_challenges?: string | null
+          team_size?: string | null
+          work_email: string
+        }
+        Update: {
+          company_name?: string
+          full_name?: string
+          id?: string
+          submitted_at?: string
+          team_challenges?: string | null
+          team_size?: string | null
+          work_email?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Brain, RefreshCw, Lightbulb, AlertCircle } from 'lucide-react';
+import { Brain, RefreshCw, Lightbulb, AlertCircle, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { trackAIInsightsGeneration, trackButtonClick } from '@/utils/analytics';
 
@@ -23,10 +23,12 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
   const [isLoading, setIsLoading] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const generateInsights = async () => {
     setIsLoading(true);
     setError(null);
+    setShowSuccess(false);
     
     try {
       console.log('Calling AI insights with data:', data);
@@ -56,6 +58,11 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
       if (result?.insights) {
         setInsights(result.insights);
         setHasGenerated(true);
+        setShowSuccess(true);
+        
+        // Hide success state after 3 seconds
+        setTimeout(() => setShowSuccess(false), 3000);
+        
         // Track successful insights generation
         trackAIInsightsGeneration(data.departmentName);
       } else {
@@ -123,7 +130,7 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
               {isLoading ? (
                 <>
                   <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Generating Insights...
+                  Generating...
                 </>
               ) : (
                 <>
@@ -152,24 +159,33 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
               </div>
             )}
             
-            <Button
-              onClick={handleRegenerate}
-              disabled={isLoading}
-              variant="outline"
-              className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft"
-            >
-              {isLoading ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  Regenerating...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  ↻ Regenerate Insights
-                </>
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={handleRegenerate}
+                disabled={isLoading}
+                variant="outline"
+                className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft"
+              >
+                {isLoading ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Regenerating...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    ↻ Regenerate Insights
+                  </>
+                )}
+              </Button>
+              
+              {showSuccess && (
+                <div className="flex items-center gap-2 text-green-600 font-medium">
+                  <Check className="w-4 h-4" />
+                  Insights Generated
+                </div>
               )}
-            </Button>
+            </div>
           </div>
         )}
       </CardContent>
