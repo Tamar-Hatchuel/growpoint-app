@@ -33,10 +33,15 @@ serve(async (req) => {
 
     console.log('Received data:', { departmentName, avgEngagement, avgCohesion, avgFriction, teamGoalDistribution, verbalComments: verbalComments.length });
 
+    // Validate input data
+    if (!departmentName) {
+      throw new Error('Department name is required');
+    }
+
     // Build the prompt for AI analysis
     let prompt = `Department: ${departmentName}
-Avg Engagement: ${avgEngagement.toFixed(1)}/10
-Avg Cohesion: ${avgCohesion.toFixed(1)}/10
+Avg Engagement: ${avgEngagement.toFixed(1)}/5
+Avg Cohesion: ${avgCohesion.toFixed(1)}/5
 Avg Friction: ${avgFriction.toFixed(1)}/5
 
 Team Goal Distribution:
@@ -75,13 +80,34 @@ ${Object.entries(teamGoalDistribution).map(([goal, count]) => `- ${goal}: ${coun
     if (!response.ok) {
       const errorText = await response.text();
       console.error('OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+      
+      // Parse error for better user feedback
+      try {
+        const errorData = JSON.parse(errorText);
+        if (errorData.error?.code === 'invalid_api_key') {
+          throw new Error('Invalid OpenAI API key. Please check your configuration.');
+        } else if (errorData.error?.code === 'insufficient_quota') {
+          throw new Error('OpenAI API quota exceeded. Please check your usage limits.');
+        }
+      } catch (parseError) {
+        // Fallback to generic error if we can't parse the response
+      }
+      
+      throw new Error(`OpenAI API error: ${response.status} - Please check your API key and try again.`);
     }
 
     const data = await response.json();
     console.log('OpenAI response data:', data);
     
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response format from OpenAI API');
+    }
+    
     const insights = data.choices[0].message.content;
+
+    if (!insights || insights.trim().length === 0) {
+      throw new Error('No insights generated. Please try again.');
+    }
 
     return new Response(JSON.stringify({ insights }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

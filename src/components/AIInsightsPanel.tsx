@@ -26,6 +26,9 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
   const [showSuccess, setShowSuccess] = useState(false);
 
   const generateInsights = async () => {
+    // Prevent multiple submissions
+    if (isLoading) return;
+    
     setIsLoading(true);
     setError(null);
     setShowSuccess(false);
@@ -36,14 +39,19 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
       // Track the insights generation attempt
       trackButtonClick('Generate AI Insights', data.departmentName || 'unknown');
       
+      // Check if we have enough data
+      if (!data.avgEngagement && !data.avgCohesion && !data.avgFriction) {
+        throw new Error('No survey data available for analysis. Please ensure team members have completed surveys.');
+      }
+      
       // Call the Supabase Edge Function
       const { data: result, error: functionError } = await supabase.functions.invoke('generate-ai-insights', {
         body: {
           departmentName: data.departmentName || 'the organization',
-          avgEngagement: data.avgEngagement,
-          avgCohesion: data.avgCohesion,
-          avgFriction: data.avgFriction,
-          teamGoalDistribution: data.teamGoalDistribution,
+          avgEngagement: data.avgEngagement || 0,
+          avgCohesion: data.avgCohesion || 0,
+          avgFriction: data.avgFriction || 0,
+          teamGoalDistribution: data.teamGoalDistribution || {},
           verbalComments: data.verbalComments || []
         }
       });
@@ -52,7 +60,8 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
       console.log('AI insights error:', functionError);
 
       if (functionError) {
-        throw new Error(functionError.message);
+        console.error('Function error:', functionError);
+        throw new Error(`Unable to generate insights: ${functionError.message}`);
       }
 
       if (result?.insights) {
@@ -66,12 +75,13 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
         // Track successful insights generation
         trackAIInsightsGeneration(data.departmentName);
       } else {
-        throw new Error('No insights received from AI service');
+        throw new Error('No insights received from AI service. Please try again.');
       }
       
     } catch (error) {
       console.error('Error generating insights:', error);
-      setError(error instanceof Error ? error.message : 'Failed to generate insights');
+      const errorMessage = error instanceof Error ? error.message : 'Could not generate insights. Please try again.';
+      setError(errorMessage);
       setInsights('');
     } finally {
       setIsLoading(false);
@@ -139,6 +149,19 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
                 </>
               )}
             </Button>
+            
+            {error && (
+              <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 text-red-700 mb-2">
+                  <AlertCircle className="w-4 h-4" />
+                  <span className="font-medium">Could not generate insights</span>
+                </div>
+                <p className="text-red-600 text-sm">{error}</p>
+                <p className="text-red-500 text-xs mt-2">
+                  Please check your OpenAI API key configuration or try again later.
+                </p>
+              </div>
+            )}
           </div>
         ) : (
           <div>
@@ -146,11 +169,11 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                 <div className="flex items-center gap-2 text-red-700 mb-2">
                   <AlertCircle className="w-4 h-4" />
-                  <span className="font-medium">Unable to generate insights</span>
+                  <span className="font-medium">Could not generate insights</span>
                 </div>
                 <p className="text-red-600 text-sm">{error}</p>
                 <p className="text-red-500 text-xs mt-2">
-                  Make sure your OpenAI API key is properly configured in Supabase.
+                  Please check your OpenAI API key configuration or try again later.
                 </p>
               </div>
             ) : (
@@ -169,7 +192,7 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
                 {isLoading ? (
                   <>
                     <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                    Regenerating...
+                    Generating...
                   </>
                 ) : (
                   <>

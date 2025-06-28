@@ -87,7 +87,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
     return { departments, totalEmployees, avgEngagement, highRiskTeams };
   }, [feedbackData]);
 
-  // Calculate department-specific engagement score with status
+  // Calculate department-specific engagement score with proper status logic (1-5 scale)
   const departmentEngagementStats = React.useMemo(() => {
     const filteredData = selectedDepartment === 'all' ? feedbackData : 
       feedbackData.filter(response => response.department === selectedDepartment);
@@ -100,12 +100,15 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
     let status = 'Excellent';
     let color = 'text-green-600';
     
-    if (average < 2.5) {
-      status = 'Needs Attention';
-      color = 'text-red-600';
-    } else if (average < 4.0) {
+    if (average >= 4.0) {
+      status = 'Excellent';
+      color = 'text-green-600';
+    } else if (average >= 2.5) {
       status = 'At Risk';
       color = 'text-yellow-600';
+    } else {
+      status = 'Needs Attention';
+      color = 'text-red-600';
     }
     
     return { average: Number(average.toFixed(1)), status, color };
@@ -113,12 +116,12 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
 
   // Create trend data (mock for now since we need historical data)
   const companyTrendData = [
-    { month: 'Jan', engagement: processedData.avgEngagement - 0.8, retention: 94, satisfaction: 3.8 },
-    { month: 'Feb', engagement: processedData.avgEngagement - 0.6, retention: 95, satisfaction: 3.9 },
-    { month: 'Mar', engagement: processedData.avgEngagement - 0.4, retention: 93, satisfaction: 4.0 },
-    { month: 'Apr', engagement: processedData.avgEngagement - 0.2, retention: 96, satisfaction: 4.1 },
-    { month: 'May', engagement: processedData.avgEngagement - 0.1, retention: 94, satisfaction: 4.0 },
-    { month: 'Jun', engagement: processedData.avgEngagement, retention: 97, satisfaction: 4.2 },
+    { month: 'Jan', engagement: Math.max(1, processedData.avgEngagement - 0.8), retention: 94, satisfaction: 3.8 },
+    { month: 'Feb', engagement: Math.max(1, processedData.avgEngagement - 0.6), retention: 95, satisfaction: 3.9 },
+    { month: 'Mar', engagement: Math.max(1, processedData.avgEngagement - 0.4), retention: 93, satisfaction: 4.0 },
+    { month: 'Apr', engagement: Math.max(1, processedData.avgEngagement - 0.2), retention: 96, satisfaction: 4.1 },
+    { month: 'May', engagement: Math.max(1, processedData.avgEngagement - 0.1), retention: 94, satisfaction: 4.0 },
+    { month: 'Jun', engagement: Math.min(5, processedData.avgEngagement), retention: 97, satisfaction: 4.2 },
   ];
 
   // Process data for AI insights with verbal comments
@@ -249,7 +252,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
           </p>
         )}
 
-        {/* Company Overview Metrics */}
+        {/* Company Overview Metrics - Fixed Engagement Score */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="border-growpoint-accent/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -310,7 +313,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
 
         {/* Analytics Charts */}
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
-          {/* Department Engagement Overview */}
+          {/* Department Engagement Overview - Fixed Y-axis to 0-5 */}
           <Card className="border-growpoint-accent/20">
             <CardHeader>
               <CardTitle className="text-growpoint-dark flex items-center gap-2">
@@ -357,7 +360,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
           </Card>
         </div>
 
-        {/* Company Trends */}
+        {/* Company Trends - Fixed Y axis for engagement to 0-5 */}
         <Card className="border-growpoint-accent/20">
           <CardHeader>
             <CardTitle className="text-growpoint-dark flex items-center gap-2">
@@ -371,9 +374,11 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={companyTrendData}>
                   <XAxis dataKey="month" />
-                  <YAxis />
+                  <YAxis yAxisId="engagement" orientation="left" domain={[0, 5]} />
+                  <YAxis yAxisId="other" orientation="right" />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Line 
+                    yAxisId="engagement"
                     type="monotone" 
                     dataKey="engagement" 
                     stroke="var(--color-engagement)" 
@@ -381,6 +386,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
                     dot={{ fill: "var(--color-engagement)" }} 
                   />
                   <Line 
+                    yAxisId="other"
                     type="monotone" 
                     dataKey="retention" 
                     stroke="var(--color-retention)" 
@@ -388,6 +394,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
                     dot={{ fill: "var(--color-retention)" }} 
                   />
                   <Line 
+                    yAxisId="other"
                     type="monotone" 
                     dataKey="satisfaction" 
                     stroke="var(--color-satisfaction)" 
