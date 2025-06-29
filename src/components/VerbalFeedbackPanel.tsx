@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
 import { FeedbackResponse } from '@/hooks/useFeedbackData';
-import TTSButton from './TTSButton';
+import SurveyTTSButton from './SurveyTTSButton';
+import { useSurveyTTS } from '@/hooks/useSurveyTTS';
 
 interface VerbalFeedbackPanelProps {
   feedbackData: FeedbackResponse[];
@@ -17,6 +18,7 @@ const VerbalFeedbackPanel: React.FC<VerbalFeedbackPanelProps> = ({
 }) => {
   const [showAll, setShowAll] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<string>('all');
+  const { speakText, isLoading: isTTSLoading } = useSurveyTTS();
 
   // Filter feedback that has verbal responses
   const verbalFeedback = feedbackData.filter(response => 
@@ -94,11 +96,10 @@ const VerbalFeedbackPanel: React.FC<VerbalFeedbackPanelProps> = ({
                         </div>
                         <div className="text-growpoint-dark bg-white rounded p-3 border-l-4 border-growpoint-primary/30 flex items-start gap-2">
                           <span className="flex-1">"{comment.comment}"</span>
-                          <TTSButton 
-                            textToSpeak={comment.comment} 
-                            size="sm" 
-                            variant="ghost"
-                            className="ml-2 flex-shrink-0"
+                          <SurveyTTSButton
+                            text={comment.comment}
+                            isLoading={isTTSLoading}
+                            onSpeak={speakText}
                           />
                         </div>
                       </div>

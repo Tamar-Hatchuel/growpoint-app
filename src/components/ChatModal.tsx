@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, Bot, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import TTSButton from './TTSButton';
+import SurveyTTSButton from './SurveyTTSButton';
+import { useSurveyTTS } from '@/hooks/useSurveyTTS';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -29,6 +30,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { speakText, isLoading: isTTSLoading } = useSurveyTTS();
 
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
@@ -119,11 +121,10 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
                 }`}>
                   <p className="text-sm whitespace-pre-wrap flex-1">{message.content}</p>
                   {message.role === 'assistant' && (
-                    <TTSButton 
-                      textToSpeak={message.content} 
-                      size="sm" 
-                      variant="ghost"
-                      className="ml-2 flex-shrink-0"
+                    <SurveyTTSButton
+                      text={message.content}
+                      isLoading={isTTSLoading}
+                      onSpeak={speakText}
                     />
                   )}
                 </div>
