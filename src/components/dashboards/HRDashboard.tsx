@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -140,7 +139,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
       engagement: dept.engagement,
       responseCount: dept.responseCount,
       // Color coding based on quadrants
-      color: dept.friction <= 2.5 && dept.engagement >= 3.5 ? '#10B981' : // Green: Low friction, high engagement
+      fill: dept.friction <= 2.5 && dept.engagement >= 3.5 ? '#10B981' : // Green: Low friction, high engagement
              dept.friction >= 3.5 || dept.engagement <= 2.5 ? '#EF4444' : // Red: High friction or low engagement  
              '#F59E0B' // Yellow: Medium
     }));
@@ -523,10 +522,14 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
                         return null;
                       }}
                     />
-                    <Scatter 
-                      dataKey="responseCount"
-                      fill={(entry: any) => entry.color}
-                    />
+                    {processedData.bubbleData.map((entry, index) => (
+                      <Scatter
+                        key={index}
+                        dataKey="responseCount"
+                        fill={entry.fill}
+                        data={[entry]}
+                      />
+                    ))}
                   </ScatterChart>
                 </ResponsiveContainer>
               </ChartContainer>

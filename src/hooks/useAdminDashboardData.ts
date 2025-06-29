@@ -2,13 +2,15 @@
 import { useState, useMemo, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-interface FeedbackData {
+interface FeedbackResponse {
+  id: string;
+  created_at: string;
   department: string;
   engagement_score: number;
   friction_level: number;
   team_goal: string;
   response_date: string;
-  employee_id: string;
+  employee_id: number | null;
   cohesion_score: number;
   verbal_q1_comment?: string;
   verbal_q2_comment?: string;
@@ -19,7 +21,7 @@ interface FeedbackData {
   verbal_q7_comment?: string;
 }
 
-export const useAdminDashboardData = (feedbackData: FeedbackData[], userDepartment: string) => {
+export const useAdminDashboardData = (feedbackData: FeedbackResponse[], userDepartment: string) => {
   const [totalEmployees, setTotalEmployees] = useState<number>(0);
 
   // Fetch total employees count for the department
@@ -63,7 +65,7 @@ export const useAdminDashboardData = (feedbackData: FeedbackData[], userDepartme
     const uniqueRespondents = new Set(
       departmentData
         .filter(response => response.employee_id)
-        .map(response => response.employee_id)
+        .map(response => response.employee_id!.toString())
     ).size;
     
     const notResponded = Math.max(0, totalEmployees - uniqueRespondents);
