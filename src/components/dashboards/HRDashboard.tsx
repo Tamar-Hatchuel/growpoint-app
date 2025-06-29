@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import TeamHealthIndicator from '../TeamHealthIndicator';
@@ -24,23 +23,23 @@ interface HRDashboardProps {
 const chartConfig = {
   engagement: {
     label: "Engagement Score",
-    color: "#E5989B",
+    color: "#FFB4A2", // GrowPoint primary
   },
   cohesion: {
     label: "Cohesion Score", 
-    color: "#FFB4A2",
+    color: "#FFCDB2", // GrowPoint soft
   },
   friction: {
     label: "Friction Level",
-    color: "#B5828C",
+    color: "#E5989B", // GrowPoint accent
   },
   employees: {
     label: "Employee Count",
-    color: "#FFCDB2",
+    color: "#FFCDB2", // GrowPoint soft
   },
   stdDev: {
     label: "Standard Deviation",
-    color: "#E5989B",
+    color: "#E5989B", // GrowPoint accent
   },
 };
 
@@ -69,7 +68,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
     
     // Fixed logic: 1-5 scale evaluation
     if (average >= 4.0) {
-      status = 'Healthy';
+      status = 'Excellent';
       color = 'text-green-600';
     } else if (average >= 2.5) {
       status = 'At Risk';
@@ -81,6 +80,11 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
     
     return { average: Number(average.toFixed(1)), status, color };
   }, [feedbackData, selectedDepartment]);
+
+  // Calculate high-risk teams based on friction >= 3.6
+  const highRiskTeams = React.useMemo(() => {
+    return processedData.departments.filter(dept => dept.friction >= 3.6).length;
+  }, [processedData.departments]);
 
   // Process data for AI insights with verbal comments
   const aiInsightsData = React.useMemo(() => {
@@ -179,7 +183,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
           totalResponses={feedbackData.length}
           totalDepartments={processedData.departments.length}
           engagementStats={departmentEngagementStats}
-          highRiskTeams={processedData.departments.filter(dept => dept.engagement < 2.5).length}
+          highRiskTeams={highRiskTeams}
         />
 
         {/* Department Health Overview */}

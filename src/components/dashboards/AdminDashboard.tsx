@@ -9,7 +9,6 @@ import AdminDashboardHeader from './admin/AdminDashboardHeader';
 import AdminKPICards from './admin/AdminKPICards';
 import AdminEngagementChart from './admin/AdminEngagementChart';
 import AdminParticipationChart from './admin/AdminParticipationChart';
-import AdminTeamGoalChart from './admin/AdminTeamGoalChart';
 import AdminFrictionAnalysis from './admin/AdminFrictionAnalysis';
 
 interface AdminDashboardProps {
@@ -31,7 +30,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
     avgEngagementScore,
     participationData,
     engagementOverTime,
-    teamGoalDistribution,
     frictionStats,
     aiInsightsData
   } = useAdminDashboardData(feedbackData, userDepartment);
@@ -70,7 +68,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
         <AdminKPICards
           responseCount={departmentData.length}
           avgEngagementScore={avgEngagementScore}
-          participationPercentage={participationData[0].percentage}
+          participationPercentage={participationData[0]?.percentage || 0}
           frictionStats={frictionStats}
         />
 
@@ -88,13 +86,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
               userDepartment={userDepartment}
             />
           </div>
-        </div>
-
-        <div className="w-full mb-6">
-          <AdminTeamGoalChart
-            data={teamGoalDistribution}
-            userDepartment={userDepartment}
-          />
         </div>
 
         <AdminFrictionAnalysis

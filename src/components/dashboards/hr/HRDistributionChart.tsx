@@ -22,16 +22,16 @@ interface HRDistributionChartProps {
 
 const HRDistributionChart: React.FC<HRDistributionChartProps> = ({ departments, chartConfig }) => {
   return (
-    <Card className="border-growpoint-accent/20 w-full">
+    <Card className="border-growpoint-accent/20 w-full max-w-full">
       <CardHeader className="p-4">
         <CardTitle className="text-growpoint-dark flex items-center gap-2 text-lg">
-          <Users className="w-5 h-5" />
+          <Users className="w-5 h-5 text-growpoint-primary" />
           Response Distribution
         </CardTitle>
-        <CardDescription className="text-sm">Survey responses across departments</CardDescription>
+        <CardDescription className="text-growpoint-dark/60 text-sm">Survey responses across departments</CardDescription>
       </CardHeader>
       <CardContent className="p-4 pt-0">
-        <ChartContainer config={chartConfig} className="h-[250px] w-full">
+        <ChartContainer config={chartConfig} className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={departments} margin={{ top: 10, right: 10, left: 10, bottom: 60 }}>
               <XAxis 
@@ -41,10 +41,20 @@ const HRDistributionChart: React.FC<HRDistributionChartProps> = ({ departments, 
                 height={80} 
                 fontSize={12}
                 interval={0}
+                tick={{ fill: '#B5828C' }}
+                axisLine={{ stroke: '#B5828C' }}
               />
-              <YAxis fontSize={12} />
+              <YAxis 
+                fontSize={12}
+                tick={{ fill: '#B5828C' }}
+                axisLine={{ stroke: '#B5828C' }}
+              />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="employees" fill="var(--color-employees)" radius={[4, 4, 0, 0]} />
+              <Bar 
+                dataKey="employees" 
+                fill="#FFCDB2" 
+                radius={[4, 4, 0, 0]} 
+              />
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>

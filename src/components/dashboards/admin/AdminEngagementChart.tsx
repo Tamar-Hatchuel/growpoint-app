@@ -16,7 +16,7 @@ interface AdminEngagementChartProps {
 const chartConfig = {
   engagement: {
     label: "Engagement Score",
-    color: "#E5989B",
+    color: "#FFB4A2", // GrowPoint primary
   },
 };
 
@@ -25,22 +25,42 @@ const AdminEngagementChart: React.FC<AdminEngagementChartProps> = ({
   userDepartment
 }) => {
   return (
-    <Card className="border-growpoint-accent/20 w-full">
+    <Card className="border-growpoint-accent/20 w-full max-w-full">
       <CardHeader className="p-4">
         <CardTitle className="text-growpoint-dark flex items-center gap-2 text-lg">
-          <TrendingUp className="w-5 h-5" />
+          <TrendingUp className="w-5 h-5 text-growpoint-primary" />
           Engagement Over Time
         </CardTitle>
-        <CardDescription className="text-sm">Weekly average engagement scores for {userDepartment}</CardDescription>
+        <CardDescription className="text-growpoint-dark/60 text-sm">Weekly average engagement scores for {userDepartment}</CardDescription>
       </CardHeader>
       <CardContent className="p-4 pt-0">
-        <ChartContainer config={chartConfig} className="h-[250px] w-full">
+        <ChartContainer config={chartConfig} className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
-              <XAxis dataKey="week" fontSize={12} />
-              <YAxis domain={[0, 5]} fontSize={12} />
+              <XAxis 
+                dataKey="week" 
+                fontSize={12} 
+                tick={{ fill: '#B5828C' }}
+                axisLine={{ stroke: '#B5828C' }}
+              />
+              <YAxis 
+                domain={[0, 5]} 
+                fontSize={12}
+                tick={{ fill: '#B5828C' }}
+                axisLine={{ stroke: '#B5828C' }}
+              />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="engagement" fill="var(--color-engagement)" radius={[4, 4, 0, 0]} />
+              <Bar 
+                dataKey="engagement" 
+                fill="#FFB4A2" 
+                radius={[4, 4, 0, 0]}
+                onMouseEnter={(data, index, e) => {
+                  e.target.style.fill = '#E08A8A';
+                }}
+                onMouseLeave={(data, index, e) => {
+                  e.target.style.fill = '#FFB4A2';
+                }}
+              />
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>

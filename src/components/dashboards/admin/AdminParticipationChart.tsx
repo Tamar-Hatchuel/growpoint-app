@@ -18,11 +18,11 @@ interface AdminParticipationChartProps {
 const chartConfig = {
   responded: {
     label: "Responded",
-    color: "#10B981",
+    color: "#FFB4A2", // GrowPoint primary
   },
   notResponded: {
     label: "Not Responded",
-    color: "#6B7280",
+    color: "#E5989B", // GrowPoint accent
   },
 };
 
@@ -30,21 +30,27 @@ const AdminParticipationChart: React.FC<AdminParticipationChartProps> = ({
   data,
   userDepartment
 }) => {
+  // Update colors to use GrowPoint palette
+  const updatedData = data.map((item, index) => ({
+    ...item,
+    color: index === 0 ? '#FFB4A2' : '#E5989B'
+  }));
+
   return (
-    <Card className="border-growpoint-accent/20 w-full">
+    <Card className="border-growpoint-accent/20 w-full max-w-full">
       <CardHeader className="p-4">
         <CardTitle className="text-growpoint-dark flex items-center gap-2 text-lg">
-          <Users className="w-5 h-5" />
+          <Users className="w-5 h-5 text-growpoint-primary" />
           Survey Participation
         </CardTitle>
-        <CardDescription className="text-sm">Response rate for {userDepartment} department</CardDescription>
+        <CardDescription className="text-growpoint-dark/60 text-sm">Response rate for {userDepartment} department</CardDescription>
       </CardHeader>
       <CardContent className="p-4 pt-0">
-        <ChartContainer config={chartConfig} className="h-[250px] w-full">
+        <ChartContainer config={chartConfig} className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={data}
+                data={updatedData}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
@@ -53,7 +59,7 @@ const AdminParticipationChart: React.FC<AdminParticipationChartProps> = ({
                 fill="#8884d8"
                 dataKey="value"
               >
-                {data.map((entry, index) => (
+                {updatedData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
@@ -62,10 +68,10 @@ const AdminParticipationChart: React.FC<AdminParticipationChartProps> = ({
                   if (active && payload && payload.length) {
                     const data = payload[0].payload;
                     return (
-                      <div className="bg-white p-3 border rounded shadow">
-                        <p className="font-medium">{data.name}</p>
-                        <p className="text-sm">Count: {data.value}</p>
-                        <p className="text-sm">Percentage: {data.percentage}%</p>
+                      <div className="bg-white p-3 border border-growpoint-accent/20 rounded shadow">
+                        <p className="font-medium text-growpoint-dark">{data.name}</p>
+                        <p className="text-sm text-growpoint-dark/60">Count: {data.value}</p>
+                        <p className="text-sm text-growpoint-dark/60">Percentage: {data.percentage}%</p>
                       </div>
                     );
                   }

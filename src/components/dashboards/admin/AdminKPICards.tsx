@@ -22,7 +22,7 @@ const AdminKPICards: React.FC<AdminKPICardsProps> = ({
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <Card className="border-growpoint-accent/20">
+      <Card className="border-growpoint-accent/20 bg-white">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-growpoint-dark">Total Responses</CardTitle>
           <Calendar className="h-4 w-4 text-growpoint-primary" />
@@ -33,7 +33,7 @@ const AdminKPICards: React.FC<AdminKPICardsProps> = ({
         </CardContent>
       </Card>
 
-      <Card className="border-growpoint-accent/20">
+      <Card className="border-growpoint-accent/20 bg-white">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-growpoint-dark">Avg Engagement Score</CardTitle>
           <TrendingUp className="h-4 w-4 text-growpoint-primary" />
@@ -46,7 +46,7 @@ const AdminKPICards: React.FC<AdminKPICardsProps> = ({
         </CardContent>
       </Card>
 
-      <Card className="border-growpoint-accent/20">
+      <Card className="border-growpoint-accent/20 bg-white">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-growpoint-dark">Survey Participation</CardTitle>
           <Users className="h-4 w-4 text-growpoint-primary" />
@@ -59,7 +59,7 @@ const AdminKPICards: React.FC<AdminKPICardsProps> = ({
         </CardContent>
       </Card>
 
-      <Card className="border-growpoint-accent/20">
+      <Card className="border-growpoint-accent/20 bg-white">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-growpoint-dark">Friction Level</CardTitle>
           <AlertTriangle className="h-4 w-4 text-growpoint-primary" />
