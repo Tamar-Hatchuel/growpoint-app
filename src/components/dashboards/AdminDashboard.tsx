@@ -1,11 +1,11 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, ResponsiveContainer } from 'recharts';
-import { Building2, TrendingUp, AlertTriangle, Home, Calendar } from 'lucide-react';
+import { Building2, TrendingUp, AlertTriangle, Home, Calendar, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useFeedbackData } from '@/hooks/useFeedbackData';
+import { supabase } from '@/integrations/supabase/client';
 import AIInsightsPanel from '@/components/AIInsightsPanel';
 import VerbalFeedbackPanel from '@/components/VerbalFeedbackPanel';
 
@@ -36,16 +36,82 @@ const chartConfig = {
     label: "Resolve",
     color: "#EF4444",
   },
+  responded: {
+    label: "Responded",
+    color: "#10B981",
+  },
+  notResponded: {
+    label: "Not Responded",
+    color: "#6B7280",
+  },
 };
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) => {
   const { feedbackData, loading, error } = useFeedbackData();
+  const [totalEmployees, setTotalEmployees] = useState<number>(0);
   const userDepartment = userData.userDepartment || userData.department || 'Unknown';
+
+  // Fetch total employees count for the department
+  React.useEffect(() => {
+    const fetchTotalEmployees = async () => {
+      try {
+        const { count, error } = await supabase
+          .from('employees')
+          .select('*', { count: 'exact', head: true })
+          .eq('Department', userDepartment);
+        
+        if (error) {
+          console.error('Error fetching total employees:', error);
+        } else {
+          setTotalEmployees(count || 0);
+        }
+      } catch (err) {
+        console.error('Error fetching employees:', err);
+      }
+    };
+
+    if (userDepartment && userDepartment !== 'Unknown') {
+      fetchTotalEmployees();
+    }
+  }, [userDepartment]);
 
   // Filter data for this admin's department
   const departmentData = useMemo(() => {
     return feedbackData.filter(response => response.department === userDepartment);
   }, [feedbackData, userDepartment]);
+
+  // Calculate average engagement score for the department
+  const avgEngagementScore = useMemo(() => {
+    if (departmentData.length === 0) return 0;
+    const total = departmentData.reduce((sum, response) => sum + (response.engagement_score || 0), 0);
+    return Number((total / departmentData.length).toFixed(1));
+  }, [departmentData]);
+
+  // Calculate survey participation data
+  const participationData = useMemo(() => {
+    const uniqueRespondents = new Set(
+      departmentData
+        .filter(response => response.employee_id)
+        .map(response => response.employee_id)
+    ).size;
+    
+    const notResponded = Math.max(0, totalEmployees - uniqueRespondents);
+    
+    return [
+      {
+        name: 'Responded',
+        value: uniqueRespondents,
+        color: chartConfig.responded.color,
+        percentage: totalEmployees > 0 ? Math.round((uniqueRespondents / totalEmployees) * 100) : 0
+      },
+      {
+        name: 'Not Responded', 
+        value: notResponded,
+        color: chartConfig.notResponded.color,
+        percentage: totalEmployees > 0 ? Math.round((notResponded / totalEmployees) * 100) : 0
+      }
+    ];
+  }, [departmentData, totalEmployees]);
 
   // Process engagement data over time (grouped by week)
   const engagementOverTime = useMemo(() => {
@@ -219,8 +285,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
           )}
         </div>
 
-        {/* KPI Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* KPI Summary Cards - Updated with Avg Engagement */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="border-growpoint-accent/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-growpoint-dark">Total Responses</CardTitle>
@@ -234,17 +300,27 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
 
           <Card className="border-growpoint-accent/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-growpoint-dark">Avg Engagement</CardTitle>
+              <CardTitle className="text-sm font-medium text-growpoint-dark">Avg Engagement Score</CardTitle>
               <TrendingUp className="h-4 w-4 text-growpoint-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-growpoint-dark">
-                {departmentData.length > 0 
-                  ? (departmentData.reduce((sum, r) => sum + (r.engagement_score || 0), 0) / departmentData.length).toFixed(1)
-                  : 0
-                }/5
+                {avgEngagementScore > 0 ? `${avgEngagementScore}/5` : '—'}
               </div>
               <p className="text-xs text-green-600">Department average</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-growpoint-accent/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-growpoint-dark">Survey Participation</CardTitle>
+              <Users className="h-4 w-4 text-growpoint-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-growpoint-dark">
+                {participationData[0].percentage}%
+              </div>
+              <p className="text-xs text-growpoint-dark/60">Response rate</p>
             </CardContent>
           </Card>
 
@@ -260,7 +336,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
           </Card>
         </div>
 
-        {/* Charts Grid */}
+        {/* Charts Grid - Updated with Survey Participation Chart */}
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
           {/* Engagement Over Time */}
           <Card className="border-growpoint-accent/20">
@@ -285,40 +361,88 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
             </CardContent>
           </Card>
 
-          {/* Team Goal Distribution */}
+          {/* Survey Participation Pie Chart */}
           <Card className="border-growpoint-accent/20">
             <CardHeader>
               <CardTitle className="text-growpoint-dark flex items-center gap-2">
-                <Building2 className="w-5 h-5" />
-                Team Goal Distribution
+                <Users className="w-5 h-5" />
+                Survey Participation
               </CardTitle>
-              <CardDescription>Current focus areas for {userDepartment} team</CardDescription>
+              <CardDescription>Response rate for {userDepartment} department</CardDescription>
             </CardHeader>
             <CardContent>
               <ChartContainer config={chartConfig} className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={teamGoalDistribution}
+                      data={participationData}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
+                      label={({ name, value, percentage }) => `${name}: ${value} (${percentage}%)`}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {teamGoalDistribution.map((entry, index) => (
+                      {participationData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <ChartTooltip 
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const data = payload[0].payload;
+                          return (
+                            <div className="bg-white p-3 border rounded shadow">
+                              <p className="font-medium">{data.name}</p>
+                              <p className="text-sm">Count: {data.value}</p>
+                              <p className="text-sm">Percentage: {data.percentage}%</p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </ChartContainer>
             </CardContent>
           </Card>
         </div>
+
+        {/* Team Goal Distribution */}
+        <Card className="border-growpoint-accent/20">
+          <CardHeader>
+            <CardTitle className="text-growpoint-dark flex items-center gap-2">
+              <Building2 className="w-5 h-5" />
+              Team Goal Distribution
+            </CardTitle>
+            <CardDescription>Current focus areas for {userDepartment} team</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={teamGoalDistribution}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {teamGoalDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
 
         {/* Friction Analysis Card */}
         <Card className="border-growpoint-accent/20">
