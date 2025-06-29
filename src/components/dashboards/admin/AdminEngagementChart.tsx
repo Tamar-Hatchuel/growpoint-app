@@ -55,10 +55,16 @@ const AdminEngagementChart: React.FC<AdminEngagementChartProps> = ({
                 fill="#FFB4A2" 
                 radius={[4, 4, 0, 0]}
                 onMouseEnter={(data, index, e) => {
-                  e.target.style.fill = '#E08A8A';
+                  const target = e.target as HTMLElement;
+                  if (target && target.style) {
+                    target.style.fill = '#E08A8A';
+                  }
                 }}
                 onMouseLeave={(data, index, e) => {
-                  e.target.style.fill = '#FFB4A2';
+                  const target = e.target as HTMLElement;
+                  if (target && target.style) {
+                    target.style.fill = '#FFB4A2';
+                  }
                 }}
               />
             </BarChart>
