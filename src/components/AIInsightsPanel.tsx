@@ -1,9 +1,9 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Brain, RefreshCw, Lightbulb, AlertCircle, Check, MessageCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { trackAIInsightsGeneration, trackButtonClick } from '@/utils/analytics';
+import { Brain, MessageCircle, Lightbulb } from 'lucide-react';
+import { trackButtonClick } from '@/utils/analytics';
 import ChatModal from './ChatModal';
 
 interface AIInsightsPanelProps {
@@ -19,80 +19,7 @@ interface AIInsightsPanelProps {
 }
 
 const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false }) => {
-  const [insights, setInsights] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasGenerated, setHasGenerated] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showSuccess, setShowSuccess] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
-
-  const generateInsights = async () => {
-    // Prevent multiple submissions
-    if (isLoading) return;
-    
-    setIsLoading(true);
-    setError(null);
-    setShowSuccess(false);
-    
-    try {
-      console.log('Calling AI insights with data:', data);
-      
-      // Track the insights generation attempt
-      trackButtonClick('Generate AI Insights', data.departmentName || 'unknown');
-      
-      // Check if we have enough data
-      if (!data.avgEngagement && !data.avgCohesion && !data.avgFriction) {
-        throw new Error('No survey data available for analysis. Please ensure team members have completed surveys.');
-      }
-      
-      // Call the Supabase Edge Function
-      const { data: result, error: functionError } = await supabase.functions.invoke('generate-ai-insights', {
-        body: {
-          departmentName: data.departmentName || 'the organization',
-          avgEngagement: data.avgEngagement || 0,
-          avgCohesion: data.avgCohesion || 0,
-          avgFriction: data.avgFriction || 0,
-          teamGoalDistribution: data.teamGoalDistribution || {},
-          verbalComments: data.verbalComments || []
-        }
-      });
-
-      console.log('AI insights result:', result);
-      console.log('AI insights error:', functionError);
-
-      if (functionError) {
-        console.error('Function error:', functionError);
-        throw new Error(`Unable to generate insights: ${functionError.message}`);
-      }
-
-      if (result?.insights) {
-        setInsights(result.insights);
-        setHasGenerated(true);
-        setShowSuccess(true);
-        
-        // Hide success state after 3 seconds
-        setTimeout(() => setShowSuccess(false), 3000);
-        
-        // Track successful insights generation
-        trackAIInsightsGeneration(data.departmentName);
-      } else {
-        throw new Error('No insights received from AI service. Please try again.');
-      }
-      
-    } catch (error) {
-      console.error('Error generating insights:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Could not generate insights. Please try again.';
-      setError(errorMessage);
-      setInsights('');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleRegenerate = () => {
-    trackButtonClick('Regenerate AI Insights', data.departmentName || 'unknown');
-    generateInsights();
-  };
 
   const handleOpenChat = () => {
     trackButtonClick('Open AI Chat', data.departmentName || 'unknown');
@@ -132,111 +59,20 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({ data, isHR = false })
         </CardHeader>
         
         <CardContent>
-          {!hasGenerated ? (
-            <div className="text-center py-6">
-              <Lightbulb className="w-12 h-12 mx-auto mb-4 text-growpoint-primary" />
-              <p className="text-growpoint-dark/70 mb-4">
-                Generate AI-powered insights based on your current data
-              </p>
-              <div className="flex gap-3 justify-center">
-                <Button
-                  onClick={generateInsights}
-                  disabled={isLoading}
-                  className="font-semibold px-6 py-2 rounded-lg text-white"
-                  style={{ backgroundColor: '#FFB4A2' }}
-                >
-                  {isLoading ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Brain className="w-4 h-4 mr-2" />
-                      Generate AI Insights
-                    </>
-                  )}
-                </Button>
-                <Button
-                  onClick={handleOpenChat}
-                  variant="outline"
-                  className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft"
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Chat with AI
-                </Button>
-              </div>
-              
-              {error && (
-                <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-red-700 mb-2">
-                    <AlertCircle className="w-4 h-4" />
-                    <span className="font-medium">Could not generate insights</span>
-                  </div>
-                  <p className="text-red-600 text-sm">{error}</p>
-                  <p className="text-red-500 text-xs mt-2">
-                    Please check your OpenAI API key configuration or try again later.
-                  </p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div>
-              {error ? (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                  <div className="flex items-center gap-2 text-red-700 mb-2">
-                    <AlertCircle className="w-4 h-4" />
-                    <span className="font-medium">Could not generate insights</span>
-                  </div>
-                  <p className="text-red-600 text-sm">{error}</p>
-                  <p className="text-red-500 text-xs mt-2">
-                    Please check your OpenAI API key configuration or try again later.
-                  </p>
-                </div>
-              ) : (
-                <div className="bg-white rounded-lg p-4 mb-4" style={{ color: '#333446' }}>
-                  <div className="whitespace-pre-line">{insights}</div>
-                </div>
-              )}
-              
-              <div className="flex items-center gap-3">
-                <Button
-                  onClick={handleRegenerate}
-                  disabled={isLoading}
-                  variant="outline"
-                  className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft"
-                >
-                  {isLoading ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      ↻ Regenerate Insights
-                    </>
-                  )}
-                </Button>
-                
-                <Button
-                  onClick={handleOpenChat}
-                  variant="outline"
-                  className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft"
-                >
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Chat with AI
-                </Button>
-                
-                {showSuccess && (
-                  <div className="flex items-center gap-2 text-green-600 font-medium">
-                    <Check className="w-4 h-4" />
-                    Insights Generated
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          <div className="text-center py-6">
+            <Lightbulb className="w-12 h-12 mx-auto mb-4 text-growpoint-primary" />
+            <p className="text-growpoint-dark/70 mb-4">
+              Chat with our AI assistant to get personalized insights based on your current data
+            </p>
+            <Button
+              onClick={handleOpenChat}
+              className="font-semibold px-6 py-2 rounded-lg text-white"
+              style={{ backgroundColor: '#FFB4A2' }}
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Generate AI Insights
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

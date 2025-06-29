@@ -19,7 +19,7 @@ serve(async (req) => {
     
     // Get Google AI API key from environment
     const googleApiKey = Deno.env.get('GOOGLE_AI_API_KEY');
-    const model = Deno.env.get('GOOGLE_MODEL') || 'gemini-1.5-flash';
+    const model = 'gemini-1.5-flash'; // Use the correct model name
     
     if (!googleApiKey) {
       throw new Error('Google AI API key not configured');
