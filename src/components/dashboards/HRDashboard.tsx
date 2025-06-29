@@ -522,14 +522,11 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
                         return null;
                       }}
                     />
-                    {processedData.bubbleData.map((entry, index) => (
-                      <Scatter
-                        key={index}
-                        dataKey="responseCount"
-                        fill={entry.fill}
-                        data={[entry]}
-                      />
-                    ))}
+                    <Scatter
+                      dataKey="responseCount"
+                      data={processedData.bubbleData}
+                      fill={(entry: any) => entry.fill}
+                    />
                   </ScatterChart>
                 </ResponsiveContainer>
               </ChartContainer>
