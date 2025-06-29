@@ -31,16 +31,16 @@ const AdminParticipationChart: React.FC<AdminParticipationChartProps> = ({
   userDepartment
 }) => {
   return (
-    <Card className="border-growpoint-accent/20">
-      <CardHeader>
-        <CardTitle className="text-growpoint-dark flex items-center gap-2">
+    <Card className="border-growpoint-accent/20 w-full">
+      <CardHeader className="p-4">
+        <CardTitle className="text-growpoint-dark flex items-center gap-2 text-lg">
           <Users className="w-5 h-5" />
           Survey Participation
         </CardTitle>
-        <CardDescription>Response rate for {userDepartment} department</CardDescription>
+        <CardDescription className="text-sm">Response rate for {userDepartment} department</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px]">
+      <CardContent className="p-4 pt-0">
+        <ChartContainer config={chartConfig} className="h-[250px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie

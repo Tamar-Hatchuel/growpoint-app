@@ -10,9 +10,7 @@ import HRDashboardHeader from './hr/HRDashboardHeader';
 import HRKPICards from './hr/HRKPICards';
 import HREngagementChart from './hr/HREngagementChart';
 import HRDistributionChart from './hr/HRDistributionChart';
-import HRTrendAnalysis from './hr/HRTrendAnalysis';
 import HRCohesionFrictionAnalysis from './hr/HRCohesionFrictionAnalysis';
-import HRPerformanceTrends from './hr/HRPerformanceTrends';
 
 interface HRDashboardProps {
   userData: {
@@ -56,7 +54,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
 
   const processedData = useHRDashboardData(feedbackData);
 
-  // Calculate department-specific engagement score with proper status logic (1-5 scale)
+  // Calculate department-specific engagement score with corrected status logic (1-5 scale)
   const departmentEngagementStats = React.useMemo(() => {
     const filteredData = selectedDepartment === 'all' ? feedbackData : 
       feedbackData.filter(response => response.department === selectedDepartment);
@@ -66,11 +64,12 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
     const totalEngagement = filteredData.reduce((sum, response) => sum + (response.engagement_score || 0), 0);
     const average = totalEngagement / filteredData.length;
     
-    let status = 'Excellent';
+    let status = 'Healthy';
     let color = 'text-green-600';
     
+    // Fixed logic: 1-5 scale evaluation
     if (average >= 4.0) {
-      status = 'Excellent';
+      status = 'Healthy';
       color = 'text-green-600';
     } else if (average >= 2.5) {
       status = 'At Risk';
@@ -82,16 +81,6 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
     
     return { average: Number(average.toFixed(1)), status, color };
   }, [feedbackData, selectedDepartment]);
-
-  // Create trend data (mock for now since we need historical data)
-  const companyTrendData = [
-    { month: 'Jan', engagement: Math.max(1, processedData.avgEngagement - 0.8), retention: 94, satisfaction: 3.8 },
-    { month: 'Feb', engagement: Math.max(1, processedData.avgEngagement - 0.6), retention: 95, satisfaction: 3.9 },
-    { month: 'Mar', engagement: Math.max(1, processedData.avgEngagement - 0.4), retention: 93, satisfaction: 4.0 },
-    { month: 'Apr', engagement: Math.max(1, processedData.avgEngagement - 0.2), retention: 96, satisfaction: 4.1 },
-    { month: 'May', engagement: Math.max(1, processedData.avgEngagement - 0.1), retention: 94, satisfaction: 4.0 },
-    { month: 'Jun', engagement: Math.min(5, processedData.avgEngagement), retention: 97, satisfaction: 4.2 },
-  ];
 
   // Process data for AI insights with verbal comments
   const aiInsightsData = React.useMemo(() => {
@@ -190,7 +179,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
           totalResponses={feedbackData.length}
           totalDepartments={processedData.departments.length}
           engagementStats={departmentEngagementStats}
-          highRiskTeams={processedData.highRiskTeams}
+          highRiskTeams={processedData.departments.filter(dept => dept.engagement < 2.5).length}
         />
 
         {/* Department Health Overview */}
@@ -205,32 +194,25 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
           ))}
         </div>
 
-        {/* Analytics Charts */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-8">
-          <HREngagementChart
-            departments={processedData.departments}
-            chartConfig={chartConfig}
-          />
-          <HRDistributionChart
-            departments={processedData.departments}
-            chartConfig={chartConfig}
-          />
+        {/* Analytics Charts - Fixed Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="w-full">
+            <HREngagementChart
+              departments={processedData.departments}
+              chartConfig={chartConfig}
+            />
+          </div>
+          <div className="w-full">
+            <HRDistributionChart
+              departments={processedData.departments}
+              chartConfig={chartConfig}
+            />
+          </div>
         </div>
-
-        <HRTrendAnalysis
-          engagementTrend={processedData.engagementTrend}
-          bubbleData={processedData.bubbleData}
-          chartConfig={chartConfig}
-        />
 
         <HRCohesionFrictionAnalysis
           cohesionFrictionData={processedData.cohesionFrictionData}
           engagementVariabilityData={processedData.engagementVariabilityData}
-          chartConfig={chartConfig}
-        />
-
-        <HRPerformanceTrends
-          companyTrendData={companyTrendData}
           chartConfig={chartConfig}
         />
 

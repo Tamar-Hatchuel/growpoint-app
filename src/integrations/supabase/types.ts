@@ -9,6 +9,27 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      chat_messages: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          role: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          role?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          role?: string | null
+        }
+        Relationships: []
+      }
       employees: {
         Row: {
           Department: string | null
@@ -109,36 +130,6 @@ export type Database = {
             referencedColumns: ["Employee ID"]
           },
         ]
-      }
-      leads: {
-        Row: {
-          company_name: string
-          full_name: string
-          id: string
-          submitted_at: string
-          team_challenges: string | null
-          team_size: string | null
-          work_email: string
-        }
-        Insert: {
-          company_name: string
-          full_name: string
-          id?: string
-          submitted_at?: string
-          team_challenges?: string | null
-          team_size?: string | null
-          work_email: string
-        }
-        Update: {
-          company_name?: string
-          full_name?: string
-          id?: string
-          submitted_at?: string
-          team_challenges?: string | null
-          team_size?: string | null
-          work_email?: string
-        }
-        Relationships: []
       }
     }
     Views: {

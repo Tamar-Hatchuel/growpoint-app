@@ -50,7 +50,9 @@ const HRKPICards: React.FC<HRKPICardsProps> = ({
           <TrendingUp className="h-4 w-4 text-growpoint-primary" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-growpoint-dark">{engagementStats.average}/5</div>
+          <div className="text-2xl font-bold text-growpoint-dark">
+            {engagementStats.average > 0 ? `${engagementStats.average}/5` : '—'}
+          </div>
           <p className={`text-xs font-medium ${engagementStats.color}`}>{engagementStats.status}</p>
         </CardContent>
       </Card>
@@ -62,7 +64,7 @@ const HRKPICards: React.FC<HRKPICardsProps> = ({
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-growpoint-dark">{highRiskTeams}</div>
-          <p className="text-xs text-yellow-600">High friction levels</p>
+          <p className="text-xs text-yellow-600">Need attention</p>
         </CardContent>
       </Card>
     </div>

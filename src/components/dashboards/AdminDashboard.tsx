@@ -74,22 +74,28 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
           frictionStats={frictionStats}
         />
 
-        <div className="grid lg:grid-cols-2 gap-8 mb-8">
-          <AdminEngagementChart
-            data={engagementOverTime}
-            userDepartment={userDepartment}
-          />
+        {/* Fixed Layout for Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="w-full">
+            <AdminEngagementChart
+              data={engagementOverTime}
+              userDepartment={userDepartment}
+            />
+          </div>
+          <div className="w-full">
+            <AdminParticipationChart
+              data={participationData}
+              userDepartment={userDepartment}
+            />
+          </div>
+        </div>
 
-          <AdminParticipationChart
-            data={participationData}
+        <div className="w-full mb-6">
+          <AdminTeamGoalChart
+            data={teamGoalDistribution}
             userDepartment={userDepartment}
           />
         </div>
-
-        <AdminTeamGoalChart
-          data={teamGoalDistribution}
-          userDepartment={userDepartment}
-        />
 
         <AdminFrictionAnalysis
           frictionStats={frictionStats}
