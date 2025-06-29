@@ -2,7 +2,8 @@
 import React from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import TTSButton from './TTSButton';
+import SurveyTTSButton from './SurveyTTSButton';
+import { useSurveyTTS } from '@/hooks/useSurveyTTS';
 
 interface SurveyQuestionListProps {
   questions: string[];
@@ -29,6 +30,8 @@ const SurveyQuestionList: React.FC<SurveyQuestionListProps> = ({
   onResponse,
   onVerbalResponse
 }) => {
+  const { speakText, isLoading } = useSurveyTTS();
+
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     if (value.length <= 500) {
@@ -38,15 +41,14 @@ const SurveyQuestionList: React.FC<SurveyQuestionListProps> = ({
 
   return (
     <div className="text-center">
-      <div className="flex items-center justify-center gap-3 mb-8">
+      <div className="flex items-center justify-center mb-8">
         <h3 className="text-lg font-semibold text-growpoint-dark">
           {questions[currentQuestion]}
         </h3>
-        <TTSButton 
-          textToSpeak={questions[currentQuestion]} 
-          size="sm" 
-          variant="ghost"
-          className="text-growpoint-primary/70 hover:text-growpoint-primary"
+        <SurveyTTSButton
+          text={questions[currentQuestion]}
+          isLoading={isLoading}
+          onSpeak={speakText}
         />
       </div>
       

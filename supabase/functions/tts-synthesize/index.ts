@@ -20,16 +20,16 @@ serve(async (req) => {
       throw new Error('Text is required');
     }
 
-    // Get Google Cloud API key from environment
-    const googleApiKey = Deno.env.get('GOOGLE_CLOUD_API_KEY');
+    // Get Google AI API key from environment
+    const googleApiKey = Deno.env.get('GOOGLE_AI_API_KEY');
     
     if (!googleApiKey) {
-      throw new Error('Google Cloud API key not configured');
+      throw new Error('Google AI API key not configured');
     }
 
-    // Call Google Cloud Text-to-Speech API
+    // Use Google AI Studio TTS API
     const response = await fetch(
-      `https://texttospeech.googleapis.com/v1/text:synthesize?key=${googleApiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/text-to-speech:synthesize?key=${googleApiKey}`,
       {
         method: 'POST',
         headers: {
@@ -39,8 +39,7 @@ serve(async (req) => {
           input: { text },
           voice: {
             languageCode: 'en-US',
-            name: 'en-US-Journey-F',
-            ssmlGender: 'FEMALE'
+            name: 'en-US-Standard-F'
           },
           audioConfig: {
             audioEncoding: 'MP3'
@@ -51,15 +50,15 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Google TTS API error:', errorText);
-      throw new Error(`Google TTS API error: ${response.status} ${errorText}`);
+      console.error('Google AI TTS API error:', errorText);
+      throw new Error(`Google AI TTS API error: ${response.status} ${errorText}`);
     }
 
     const data = await response.json();
-    console.log('Google TTS API response received');
+    console.log('Google AI TTS API response received');
 
     if (!data.audioContent) {
-      throw new Error('No audio content received from Google TTS API');
+      throw new Error('No audio content received from Google AI TTS API');
     }
 
     // Create a data URL for the audio
