@@ -2,6 +2,7 @@
 import React from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import TTSButton from './TTSButton';
 
 interface SurveyQuestionListProps {
   questions: string[];
@@ -37,9 +38,17 @@ const SurveyQuestionList: React.FC<SurveyQuestionListProps> = ({
 
   return (
     <div className="text-center">
-      <h3 className="text-lg font-semibold text-growpoint-dark mb-8">
-        {questions[currentQuestion]}
-      </h3>
+      <div className="flex items-center justify-center gap-3 mb-8">
+        <h3 className="text-lg font-semibold text-growpoint-dark">
+          {questions[currentQuestion]}
+        </h3>
+        <TTSButton 
+          textToSpeak={questions[currentQuestion]} 
+          size="sm" 
+          variant="ghost"
+          className="text-growpoint-primary/70 hover:text-growpoint-primary"
+        />
+      </div>
       
       <div className="flex justify-center space-x-4 mb-8">
         {emojiScale.map((option) => (

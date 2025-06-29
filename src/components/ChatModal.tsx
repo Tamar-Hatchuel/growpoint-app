@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, Bot, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import TTSButton from './TTSButton';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -111,12 +112,20 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose }) => {
                     <Bot className="w-4 h-4" />
                   )}
                 </div>
-                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg flex items-start gap-2 ${
                   message.role === 'user'
                     ? 'bg-growpoint-primary text-white ml-auto'
                     : 'bg-growpoint-soft text-growpoint-dark mr-auto'
                 }`}>
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  <p className="text-sm whitespace-pre-wrap flex-1">{message.content}</p>
+                  {message.role === 'assistant' && (
+                    <TTSButton 
+                      textToSpeak={message.content} 
+                      size="sm" 
+                      variant="ghost"
+                      className="ml-2 flex-shrink-0"
+                    />
+                  )}
                 </div>
               </div>
             ))}
