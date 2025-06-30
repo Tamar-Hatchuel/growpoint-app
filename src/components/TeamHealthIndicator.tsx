@@ -15,8 +15,11 @@ const TeamHealthIndicator: React.FC<TeamHealthIndicatorProps> = ({
   teamName 
 }) => {
   const getHealthStatus = () => {
-    // Healthy: Low friction (< 2.0) AND high engagement (> 7.5)
-    if (frictionLevel < 2.0 && engagementScore > 7.5) {
+    // Ensure engagement score is capped at 5 for consistent evaluation
+    const cappedEngagement = Math.min(5, engagementScore);
+    
+    // Healthy: Low friction (< 2.0) AND high engagement (>= 3.5)
+    if (frictionLevel < 2.0 && cappedEngagement >= 3.5) {
       return {
         status: 'healthy',
         icon: CheckCircle,
@@ -28,8 +31,8 @@ const TeamHealthIndicator: React.FC<TeamHealthIndicatorProps> = ({
       };
     }
     
-    // At Risk: Medium friction (2.0-3.0) OR moderate engagement (6.0-7.5)
-    if ((frictionLevel >= 2.0 && frictionLevel <= 3.0) || (engagementScore >= 6.0 && engagementScore <= 7.5)) {
+    // At Risk: Medium friction (2.0-3.5) OR moderate engagement (2.5-3.4)
+    if ((frictionLevel >= 2.0 && frictionLevel < 3.6) || (cappedEngagement >= 2.5 && cappedEngagement < 3.5)) {
       return {
         status: 'at-risk',
         icon: AlertTriangle,
@@ -41,7 +44,7 @@ const TeamHealthIndicator: React.FC<TeamHealthIndicatorProps> = ({
       };
     }
     
-    // Needs Attention: High friction (> 3.0) OR low engagement (< 6.0)
+    // Needs Attention: High friction (>= 3.6) OR low engagement (< 2.5)
     return {
       status: 'critical',
       icon: XCircle,
@@ -49,12 +52,15 @@ const TeamHealthIndicator: React.FC<TeamHealthIndicatorProps> = ({
       bgColor: 'bg-red-50',
       borderColor: 'border-red-200',
       title: '❌ Needs Attention',
-      description: 'Immediate action required to address issues'
+      description: 'Immediate intervention required to address issues'
     };
   };
 
   const health = getHealthStatus();
   const IconComponent = health.icon;
+  
+  // Cap engagement score display at 5
+  const displayEngagement = Math.min(5, engagementScore);
 
   return (
     <Card className={`${health.bgColor} ${health.borderColor} border-2`}>
@@ -78,14 +84,14 @@ const TeamHealthIndicator: React.FC<TeamHealthIndicatorProps> = ({
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="text-center">
             <div className="font-semibold text-growpoint-dark">Engagement</div>
-            <div className={`text-lg font-bold ${engagementScore > 7.5 ? 'text-green-600' : engagementScore > 6.0 ? 'text-yellow-600' : 'text-red-600'}`}>
-              {engagementScore.toFixed(1)}/10
+            <div className={`text-lg font-bold ${displayEngagement >= 3.5 ? 'text-green-600' : displayEngagement >= 2.5 ? 'text-yellow-600' : 'text-red-600'}`}>
+              {displayEngagement.toFixed(1)}/5
             </div>
           </div>
           
           <div className="text-center">
             <div className="font-semibold text-growpoint-dark">Friction</div>
-            <div className={`text-lg font-bold ${frictionLevel < 2.0 ? 'text-green-600' : frictionLevel <= 3.0 ? 'text-yellow-600' : 'text-red-600'}`}>
+            <div className={`text-lg font-bold ${frictionLevel < 2.0 ? 'text-green-600' : frictionLevel < 3.6 ? 'text-yellow-600' : 'text-red-600'}`}>
               {frictionLevel.toFixed(1)}/5
             </div>
           </div>

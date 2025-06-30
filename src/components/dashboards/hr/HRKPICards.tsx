@@ -20,10 +20,18 @@ const HRKPICards: React.FC<HRKPICardsProps> = ({
   engagementStats,
   highRiskTeams,
 }) => {
-  // Determine subtitle for at-risk teams
+  // Determine subtitle for at-risk teams with clearer messaging
   const getAtRiskSubtitle = (count: number) => {
-    if (count === 0) return "No high-risk teams";
-    return "High friction levels";
+    if (count === 0) return "No teams need attention";
+    if (count === 1) return "1 team needs attention";
+    return `${count} teams need attention`;
+  };
+
+  // Determine color for at-risk teams indicator
+  const getAtRiskColor = (count: number) => {
+    if (count === 0) return 'text-green-600';
+    if (count <= 2) return 'text-yellow-600';
+    return 'text-red-600';
   };
 
   return (
@@ -65,12 +73,12 @@ const HRKPICards: React.FC<HRKPICardsProps> = ({
 
       <Card className="border-growpoint-accent/20 bg-white">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-growpoint-dark">At-Risk Teams</CardTitle>
-          <AlertTriangle className="h-4 w-4 text-yellow-500" />
+          <CardTitle className="text-sm font-medium text-growpoint-dark">Teams Needing Attention</CardTitle>
+          <AlertTriangle className={`h-4 w-4 ${highRiskTeams > 0 ? 'text-yellow-500' : 'text-green-500'}`} />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-growpoint-dark">{highRiskTeams}</div>
-          <p className={`text-xs font-medium ${highRiskTeams > 0 ? 'text-yellow-600' : 'text-green-600'}`}>
+          <p className={`text-xs font-medium ${getAtRiskColor(highRiskTeams)}`}>
             {getAtRiskSubtitle(highRiskTeams)}
           </p>
         </CardContent>

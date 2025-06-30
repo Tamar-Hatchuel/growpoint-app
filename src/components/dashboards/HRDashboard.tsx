@@ -60,17 +60,22 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
     
     if (filteredData.length === 0) return { average: 0, status: 'No Data', color: 'text-gray-500' };
     
-    const totalEngagement = filteredData.reduce((sum, response) => sum + (response.engagement_score || 0), 0);
-    const average = totalEngagement / filteredData.length;
+    // Cap engagement scores at 5 and calculate average
+    const cappedScores = filteredData.map(response => Math.min(5, response.engagement_score || 0));
+    const totalEngagement = cappedScores.reduce((sum, score) => sum + score, 0);
+    const average = totalEngagement / cappedScores.length;
     
     let status = 'Healthy';
     let color = 'text-green-600';
     
-    // Fixed logic: 1-5 scale evaluation
+    // Fixed logic: 1-5 scale evaluation with proper thresholds
     if (average >= 4.0) {
       status = 'Excellent';
       color = 'text-green-600';
-    } else if (average >= 2.5) {
+    } else if (average >= 3.0) {
+      status = 'Healthy';
+      color = 'text-green-600';
+    } else if (average >= 2.0) {
       status = 'At Risk';
       color = 'text-yellow-600';
     } else {
@@ -78,7 +83,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
       color = 'text-red-600';
     }
     
-    return { average: Number(average.toFixed(1)), status, color };
+    return { average: Number(Math.min(5, average).toFixed(1)), status, color };
   }, [feedbackData, selectedDepartment]);
 
   // Calculate high-risk teams based on friction >= 3.6
@@ -102,7 +107,9 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
       };
     }
 
-    const avgEngagement = filteredData.reduce((sum, r) => sum + (r.engagement_score || 0), 0) / filteredData.length;
+    // Cap engagement scores for AI insights
+    const cappedEngagementScores = filteredData.map(r => Math.min(5, r.engagement_score || 0));
+    const avgEngagement = cappedEngagementScores.reduce((sum, score) => sum + score, 0) / cappedEngagementScores.length;
     const avgCohesion = filteredData.reduce((sum, r) => sum + (r.cohesion_score || 0), 0) / filteredData.length;
     const avgFriction = filteredData.reduce((sum, r) => sum + (r.friction_level || 0), 0) / filteredData.length;
     
@@ -131,7 +138,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
     });
 
     return {
-      avgEngagement,
+      avgEngagement: Math.min(5, avgEngagement),
       avgCohesion,
       avgFriction,
       teamGoalDistribution: goalDistribution,

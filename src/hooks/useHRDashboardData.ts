@@ -57,6 +57,15 @@ export const useHRDashboardData = (feedbackData: FeedbackResponse[]) => {
     return Math.sqrt(avgSquaredDiff);
   };
 
+  // Helper function to cap engagement scores at maximum value (5)
+  const capEngagementScore = (score: number): number => {
+    if (score > 5) {
+      console.warn(`Engagement score ${score} exceeds maximum of 5, capping at 5`);
+      return 5;
+    }
+    return Math.max(0, Math.min(5, Number(score.toFixed(1))));
+  };
+
   // Process the feedback data for dashboard metrics
   const processedData = React.useMemo(() => {
     if (!feedbackData.length) return { 
@@ -84,7 +93,9 @@ export const useHRDashboardData = (feedbackData: FeedbackResponse[]) => {
         };
       }
       
-      acc[dept].engagement.push(response.engagement_score);
+      // Cap engagement scores at 5 to prevent display issues
+      const cappedEngagement = Math.min(5, response.engagement_score || 0);
+      acc[dept].engagement.push(cappedEngagement);
       acc[dept].cohesion.push(response.cohesion_score);
       acc[dept].friction.push(response.friction_level);
       acc[dept].responses.push(response);
@@ -98,7 +109,7 @@ export const useHRDashboardData = (feedbackData: FeedbackResponse[]) => {
 
     const departments = Object.values(departmentStats).map((dept: any) => ({
       department: dept.department,
-      engagement: Number((dept.engagement.reduce((sum: number, val: number) => sum + val, 0) / dept.engagement.length).toFixed(1)),
+      engagement: capEngagementScore(dept.engagement.reduce((sum: number, val: number) => sum + val, 0) / dept.engagement.length),
       cohesion: Number((dept.cohesion.reduce((sum: number, val: number) => sum + val, 0) / dept.cohesion.length).toFixed(1)),
       employees: dept.employees.size || dept.count,
       friction: Number((dept.friction.reduce((sum: number, val: number) => sum + val, 0) / dept.friction.length).toFixed(1)),
@@ -119,14 +130,16 @@ export const useHRDashboardData = (feedbackData: FeedbackResponse[]) => {
         weeklyEngagement[weekKey] = { total: 0, count: 0, week: weekLabel };
       }
       
-      weeklyEngagement[weekKey].total += response.engagement_score || 0;
+      // Cap engagement scores in trend calculation
+      const cappedEngagement = Math.min(5, response.engagement_score || 0);
+      weeklyEngagement[weekKey].total += cappedEngagement;
       weeklyEngagement[weekKey].count += 1;
     });
 
     const engagementTrend = Object.values(weeklyEngagement)
       .map(data => ({
         week: data.week,
-        engagement: Number((data.total / data.count).toFixed(1))
+        engagement: capEngagementScore(data.total / data.count)
       }))
       .sort((a, b) => a.week.localeCompare(b.week));
 
@@ -136,10 +149,11 @@ export const useHRDashboardData = (feedbackData: FeedbackResponse[]) => {
       friction: dept.friction,
       engagement: dept.engagement,
       responseCount: dept.responseCount,
-      // Color coding based on quadrants
-      fill: dept.friction <= 2.5 && dept.engagement >= 3.5 ? '#10B981' : // Green: Low friction, high engagement
-             dept.friction >= 3.5 || dept.engagement <= 2.5 ? '#EF4444' : // Red: High friction or low engagement  
-             '#F59E0B' // Yellow: Medium
+      // Updated color coding: Low friction (<=2.5) AND high engagement (>=3.5) = Green
+      // High friction (>=3.6) OR low engagement (<=2.5) = Red, otherwise Yellow
+      fill: dept.friction <= 2.5 && dept.engagement >= 3.5 ? '#10B981' : 
+             dept.friction >= 3.6 || dept.engagement <= 2.5 ? '#EF4444' : 
+             '#F59E0B'
     }));
 
     // Prepare cohesion vs friction data
@@ -156,8 +170,11 @@ export const useHRDashboardData = (feedbackData: FeedbackResponse[]) => {
     }));
 
     const totalEmployees = departments.reduce((sum, dept) => sum + dept.employees, 0);
-    const avgEngagement = Number((departments.reduce((sum, dept) => sum + dept.engagement, 0) / departments.length).toFixed(1));
-    const highRiskTeams = departments.filter(dept => dept.friction > 2.5).length;
+    const avgEngagement = departments.length > 0 ? 
+      capEngagementScore(departments.reduce((sum, dept) => sum + dept.engagement, 0) / departments.length) : 0;
+    
+    // Fixed high-risk teams logic: Use friction >= 3.6 as threshold for "Needs Attention"
+    const highRiskTeams = departments.filter(dept => dept.friction >= 3.6).length;
 
     return { 
       departments, 

@@ -1,4 +1,3 @@
-
 import { useState, useMemo, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -23,6 +22,15 @@ interface FeedbackResponse {
 
 export const useAdminDashboardData = (feedbackData: FeedbackResponse[], userDepartment: string) => {
   const [totalEmployees, setTotalEmployees] = useState<number>(0);
+
+  // Helper function to cap engagement scores at maximum value (5)
+  const capEngagementScore = (score: number): number => {
+    if (score > 5) {
+      console.warn(`Engagement score ${score} exceeds maximum of 5, capping at 5`);
+      return 5;
+    }
+    return Math.max(0, Math.min(5, Number(score.toFixed(1))));
+  };
 
   // Fetch total employees count for the department
   useEffect(() => {
@@ -53,11 +61,12 @@ export const useAdminDashboardData = (feedbackData: FeedbackResponse[], userDepa
     return feedbackData.filter(response => response.department === userDepartment);
   }, [feedbackData, userDepartment]);
 
-  // Calculate average engagement score for the department
+  // Calculate average engagement score for the department with capping
   const avgEngagementScore = useMemo(() => {
     if (departmentData.length === 0) return 0;
-    const total = departmentData.reduce((sum, response) => sum + (response.engagement_score || 0), 0);
-    return Number((total / departmentData.length).toFixed(1));
+    const cappedScores = departmentData.map(response => Math.min(5, response.engagement_score || 0));
+    const total = cappedScores.reduce((sum, score) => sum + score, 0);
+    return capEngagementScore(total / cappedScores.length);
   }, [departmentData]);
 
   // Calculate survey participation data
@@ -86,7 +95,7 @@ export const useAdminDashboardData = (feedbackData: FeedbackResponse[], userDepa
     ];
   }, [departmentData, totalEmployees]);
 
-  // Process engagement data over time (grouped by week)
+  // Process engagement data over time (grouped by week) with capping
   const engagementOverTime = useMemo(() => {
     const weeklyData: { [key: string]: { total: number; count: number; week: string } } = {};
     
@@ -100,14 +109,16 @@ export const useAdminDashboardData = (feedbackData: FeedbackResponse[], userDepa
         weeklyData[weekKey] = { total: 0, count: 0, week: weekLabel };
       }
       
-      weeklyData[weekKey].total += response.engagement_score || 0;
+      // Cap engagement scores in weekly calculation
+      const cappedScore = Math.min(5, response.engagement_score || 0);
+      weeklyData[weekKey].total += cappedScore;
       weeklyData[weekKey].count += 1;
     });
 
     return Object.values(weeklyData)
       .map(data => ({
         week: data.week,
-        engagement: Number((data.total / data.count).toFixed(1))
+        engagement: capEngagementScore(data.total / data.count)
       }))
       .sort((a, b) => a.week.localeCompare(b.week));
   }, [departmentData]);
@@ -129,7 +140,7 @@ export const useAdminDashboardData = (feedbackData: FeedbackResponse[], userDepa
     }));
   }, [departmentData]);
 
-  // Calculate friction level
+  // Calculate friction level with improved thresholds
   const frictionStats = useMemo(() => {
     if (departmentData.length === 0) return { average: 0, status: 'Healthy', color: 'text-green-600' };
     
@@ -139,10 +150,11 @@ export const useAdminDashboardData = (feedbackData: FeedbackResponse[], userDepa
     let status = 'Healthy';
     let color = 'text-green-600';
     
+    // Updated thresholds: >= 3.6 for "Needs Attention", 2.0-3.5 for "At Risk"
     if (average >= 3.6) {
       status = 'Needs Attention';
       color = 'text-red-600';
-    } else if (average >= 2.1) {
+    } else if (average >= 2.0) {
       status = 'At Risk';
       color = 'text-yellow-600';
     }
@@ -150,7 +162,7 @@ export const useAdminDashboardData = (feedbackData: FeedbackResponse[], userDepa
     return { average: Number(average.toFixed(1)), status, color };
   }, [departmentData]);
 
-  // Process data for AI insights
+  // Process data for AI insights with engagement capping
   const aiInsightsData = useMemo(() => {
     if (departmentData.length === 0) {
       return {
@@ -163,7 +175,9 @@ export const useAdminDashboardData = (feedbackData: FeedbackResponse[], userDepa
       };
     }
 
-    const avgEngagement = departmentData.reduce((sum, r) => sum + (r.engagement_score || 0), 0) / departmentData.length;
+    // Cap engagement scores for AI insights
+    const cappedScores = departmentData.map(r => Math.min(5, r.engagement_score || 0));
+    const avgEngagement = cappedScores.reduce((sum, score) => sum + score, 0) / cappedScores.length;
     const avgCohesion = departmentData.reduce((sum, r) => sum + (r.cohesion_score || 0), 0) / departmentData.length;
     const avgFriction = departmentData.reduce((sum, r) => sum + (r.friction_level || 0), 0) / departmentData.length;
     
@@ -193,7 +207,7 @@ export const useAdminDashboardData = (feedbackData: FeedbackResponse[], userDepa
     });
 
     return {
-      avgEngagement,
+      avgEngagement: capEngagementScore(avgEngagement),
       avgCohesion,
       avgFriction,
       teamGoalDistribution: goalDistribution,
