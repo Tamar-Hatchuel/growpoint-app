@@ -51,9 +51,9 @@ const AIInsightsPanel: React.FC<AIInsightsPanelProps> = ({
       backgroundColor: '#E5989B20'
     }}>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2" style={{
+          <CardTitle style={{
           color: '#333446'
-        }}>
+        }} className="flex items-center gap-2 text-[#b5828c]">
             <Brain className="w-5 h-5" />
             📊 AI Insights & Recommendations
           </CardTitle>
