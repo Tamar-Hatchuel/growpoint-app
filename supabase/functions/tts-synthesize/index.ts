@@ -20,29 +20,37 @@ serve(async (req) => {
       throw new Error('Text is required');
     }
 
-    // Get Google AI API key from environment
+    // Get Google Cloud API key from environment
     const googleApiKey = Deno.env.get('GOOGLE_AI_API_KEY');
     
     if (!googleApiKey) {
-      throw new Error('Google AI API key not configured');
+      throw new Error('Google Cloud API key not configured');
     }
 
-    // Use Google AI Studio TTS API
+    console.log('Calling Google Cloud Text-to-Speech API with text:', text.substring(0, 50) + '...');
+
+    // Use Google Cloud Text-to-Speech API
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/text-to-speech:synthesize?key=${googleApiKey}`,
+      `https://texttospeech.googleapis.com/v1/text:synthesize?key=${googleApiKey}`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          input: { text },
+          input: {
+            text: text
+          },
           voice: {
             languageCode: 'en-US',
-            name: 'en-US-Standard-F'
+            name: 'en-US-Standard-F',
+            ssmlGender: 'FEMALE'
           },
           audioConfig: {
-            audioEncoding: 'MP3'
+            audioEncoding: 'MP3',
+            speakingRate: 1.0,
+            pitch: 0.0,
+            volumeGainDb: 0.0
           }
         }),
       }
@@ -50,18 +58,26 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Google AI TTS API error:', errorText);
-      throw new Error(`Google AI TTS API error: ${response.status} ${errorText}`);
+      console.error('Google Cloud TTS API error:', response.status, errorText);
+      
+      // Handle specific error cases
+      if (response.status === 403) {
+        throw new Error('Google Cloud TTS API access denied. Please check your API key and ensure the Text-to-Speech API is enabled.');
+      } else if (response.status === 400) {
+        throw new Error('Invalid request to Google Cloud TTS API. Please check the text input.');
+      } else {
+        throw new Error(`Google Cloud TTS API error: ${response.status} - ${errorText}`);
+      }
     }
 
     const data = await response.json();
-    console.log('Google AI TTS API response received');
+    console.log('Google Cloud TTS API response received successfully');
 
     if (!data.audioContent) {
-      throw new Error('No audio content received from Google AI TTS API');
+      throw new Error('No audio content received from Google Cloud TTS API');
     }
 
-    // Create a data URL for the audio
+    // Create a data URL for the audio (Google Cloud returns base64-encoded MP3)
     const audioUrl = `data:audio/mp3;base64,${data.audioContent}`;
 
     return new Response(JSON.stringify({ audioUrl }), {
