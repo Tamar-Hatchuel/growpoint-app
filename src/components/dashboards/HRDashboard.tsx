@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import TeamHealthIndicator from '../TeamHealthIndicator';
 import { useFeedbackData } from '@/hooks/useFeedbackData';
-import AIInsightsPanel from '@/components/AIInsightsPanel';
-import VerbalFeedbackPanel from '@/components/VerbalFeedbackPanel';
+import AIAssistantPanel from '@/components/AIAssistantPanel';
+import VerbalFeedbackTable from '@/components/VerbalFeedbackTable';
 import { useHRDashboardData } from '@/hooks/useHRDashboardData';
 import HRDashboardHeader from './hr/HRDashboardHeader';
 import HRKPICards from './hr/HRKPICards';
@@ -184,6 +185,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
           onDepartmentChange={setSelectedDepartment}
           dateRange={dateRange}
           onDateRangeChange={setDateRange}
+          aiAssistantPanel={<AIAssistantPanel data={aiInsightsData} isHR={true} />}
         />
 
         <HRKPICards
@@ -227,12 +229,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
           chartConfig={chartConfig}
         />
 
-        <AIInsightsPanel 
-          data={aiInsightsData}
-          isHR={true}
-        />
-
-        <VerbalFeedbackPanel 
+        <VerbalFeedbackTable 
           feedbackData={verbalFeedbackData}
           departmentName={selectedDepartment === 'all' ? undefined : selectedDepartment}
         />

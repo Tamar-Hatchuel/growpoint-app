@@ -7,12 +7,14 @@ interface AdminDashboardHeaderProps {
   userDepartment: string;
   responseCount: number;
   onRestart?: () => void;
+  aiAssistantPanel: React.ReactNode;
 }
 
 const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
   userDepartment,
   responseCount,
-  onRestart
+  onRestart,
+  aiAssistantPanel
 }) => {
   return (
     <div className="flex items-center justify-between mb-8">
@@ -33,16 +35,20 @@ const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
         </div>
       </div>
       
-      {onRestart && (
-        <Button
-          onClick={onRestart}
-          className="text-white font-semibold px-6 py-2 rounded-lg"
-          style={{ backgroundColor: '#FFB4A2' }}
-        >
-          <Home className="w-4 h-4 mr-2" />
-          Back to Home
-        </Button>
-      )}
+      <div className="flex items-center gap-4">
+        {aiAssistantPanel}
+        {onRestart && (
+          <Button
+            onClick={onRestart}
+            size="sm"
+            className="text-white px-4 py-2 rounded-md text-sm font-normal"
+            style={{ backgroundColor: '#FFB4A2' }}
+          >
+            <Home className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

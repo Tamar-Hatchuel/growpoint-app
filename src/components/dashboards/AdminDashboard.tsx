@@ -3,8 +3,8 @@ import React from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { useFeedbackData } from '@/hooks/useFeedbackData';
 import { useAdminDashboardData } from '@/hooks/useAdminDashboardData';
-import AIInsightsPanel from '@/components/AIInsightsPanel';
-import VerbalFeedbackPanel from '@/components/VerbalFeedbackPanel';
+import AIAssistantPanel from '@/components/AIAssistantPanel';
+import VerbalFeedbackTable from '@/components/VerbalFeedbackTable';
 import AdminDashboardHeader from './admin/AdminDashboardHeader';
 import AdminKPICards from './admin/AdminKPICards';
 import AdminEngagementChart from './admin/AdminEngagementChart';
@@ -63,6 +63,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
           userDepartment={userDepartment}
           responseCount={departmentData.length}
           onRestart={onRestart}
+          aiAssistantPanel={<AIAssistantPanel data={aiInsightsData} isHR={false} />}
         />
 
         <AdminKPICards
@@ -93,12 +94,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
           userDepartment={userDepartment}
         />
 
-        <AIInsightsPanel 
-          data={aiInsightsData}
-          isHR={false}
-        />
-
-        <VerbalFeedbackPanel 
+        <VerbalFeedbackTable 
           feedbackData={departmentData}
           departmentName={userDepartment}
         />
