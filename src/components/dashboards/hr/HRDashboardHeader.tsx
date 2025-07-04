@@ -38,18 +38,20 @@ const HRDashboardHeader: React.FC<HRDashboardHeaderProps> = ({
         </div>
         
         <div className="flex items-center gap-4">
-          {aiAssistantPanel}
-          {onRestart && (
-            <Button 
-              onClick={onRestart} 
-              size="sm"
-              className="text-white px-4 py-2 rounded-md text-sm font-normal"
-              style={{ backgroundColor: '#FFB4A2' }}
-            >
-              <Home className="w-4 h-4 mr-2" />
-              Back to Home
-            </Button>
-          )}
+          <div className="flex flex-col gap-2 min-w-[180px]">
+            {onRestart && (
+              <Button 
+                onClick={onRestart} 
+                size="sm"
+                className="text-white px-4 py-2 rounded-md text-sm font-normal"
+                style={{ backgroundColor: '#FFB4A2' }}
+              >
+                <Home className="w-4 h-4 mr-2" />
+                Back to Home
+              </Button>
+            )}
+            {aiAssistantPanel}
+          </div>
           <DepartmentFilter 
             selectedDepartment={selectedDepartment} 
             onDepartmentChange={onDepartmentChange} 

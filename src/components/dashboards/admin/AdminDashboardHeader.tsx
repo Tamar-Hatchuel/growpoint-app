@@ -35,8 +35,7 @@ const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
         </div>
       </div>
       
-      <div className="flex items-center gap-4">
-        {aiAssistantPanel}
+      <div className="flex flex-col gap-2 min-w-[180px]">
         {onRestart && (
           <Button
             onClick={onRestart}
@@ -48,6 +47,7 @@ const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
             Back to Home
           </Button>
         )}
+        {aiAssistantPanel}
       </div>
     </div>
   );

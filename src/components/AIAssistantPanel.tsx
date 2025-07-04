@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { X, Brain } from 'lucide-react';
+import { X, Lightbulb } from 'lucide-react';
 import AIInsightsPanel from './AIInsightsPanel';
 
 interface AIAssistantPanelProps {
@@ -17,18 +17,19 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ data, isHR }) => {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
-          variant="outline"
           size="sm"
-          className="w-10 h-10 rounded-full p-0 border-growpoint-accent/30 hover:bg-growpoint-soft text-growpoint-dark"
+          className="text-white px-4 py-2 rounded-md text-sm font-normal w-full"
+          style={{ backgroundColor: '#FFB4A2' }}
           title="Open AI Assistant"
         >
-          <Brain className="w-5 h-5" />
+          <Lightbulb className="w-4 h-4 mr-2" />
+          Generate AI Insights
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-white border-growpoint-accent/20">
         <DialogHeader className="border-b border-growpoint-accent/20 pb-4">
           <DialogTitle className="text-growpoint-dark flex items-center gap-2">
-            <Brain className="w-5 h-5 text-growpoint-primary" />
+            <Lightbulb className="w-5 h-5 text-growpoint-primary" />
             GrowPoint AI Assistant
           </DialogTitle>
         </DialogHeader>

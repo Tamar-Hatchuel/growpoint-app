@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { FeedbackResponse } from '@/hooks/useFeedbackData';
 import SurveyTTSButton from './SurveyTTSButton';
 import { useSurveyTTS } from '@/hooks/useSurveyTTS';
@@ -71,35 +71,33 @@ const VerbalFeedbackTable: React.FC<VerbalFeedbackTableProps> = ({
 
   return (
     <Card className="border-growpoint-accent/20">
-      <CardHeader>
+      <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-growpoint-dark">
-          <MessageSquare className="w-5 h-5" />
-          📝 Verbal Feedback from Team Members
+          Verbal Feedback from Team Members
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-sm">
           Anonymous written responses from your team members
           {departmentName && ` in ${departmentName}`}
         </CardDescription>
       </CardHeader>
       
-      <CardContent>
+      <CardContent className="pt-0">
         {verbalFeedback.length === 0 ? (
-          <div className="text-center py-8">
-            <MessageSquare className="w-12 h-12 mx-auto mb-4 text-growpoint-primary/50" />
-            <p className="text-growpoint-dark/60">
+          <div className="text-center py-6">
+            <p className="text-growpoint-dark/60 text-sm">
               No verbal feedback available yet. Encourage team members to add comments when filling out surveys.
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="border border-growpoint-accent/20 rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-growpoint-soft/30">
-                    <TableHead className="text-growpoint-dark font-medium">Date</TableHead>
-                    <TableHead className="text-growpoint-dark font-medium">Question</TableHead>
-                    <TableHead className="text-growpoint-dark font-medium">Verbal Comment</TableHead>
-                    <TableHead className="w-16"></TableHead>
+                    <TableHead className="text-growpoint-dark font-medium text-xs h-8 py-2">Date</TableHead>
+                    <TableHead className="text-growpoint-dark font-medium text-xs h-8 py-2">Question</TableHead>
+                    <TableHead className="text-growpoint-dark font-medium text-xs h-8 py-2">Verbal Comment</TableHead>
+                    <TableHead className="w-12 h-8 py-2"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -107,21 +105,21 @@ const VerbalFeedbackTable: React.FC<VerbalFeedbackTableProps> = ({
                     <TableRow 
                       key={row.id}
                       className={`
-                        hover:bg-growpoint-soft/20 transition-colors
+                        hover:bg-growpoint-soft/20 transition-colors h-10
                         ${index % 2 === 0 ? 'bg-white' : 'bg-growpoint-soft/10'}
                         ${row.isFirstRow && index > 0 ? 'border-t-2 border-growpoint-accent/30' : ''}
                       `}
                     >
-                      <TableCell className="text-sm text-growpoint-dark/70">
+                      <TableCell className="text-xs text-growpoint-dark/70 py-2">
                         {row.isFirstRow ? row.date : ''}
                       </TableCell>
-                      <TableCell className="text-sm font-medium text-growpoint-dark/80">
+                      <TableCell className="text-xs font-medium text-growpoint-dark/80 py-2">
                         {row.question}
                       </TableCell>
-                      <TableCell className="text-growpoint-dark">
+                      <TableCell className="text-growpoint-dark text-xs py-2">
                         "{row.comment}"
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-2">
                         <SurveyTTSButton
                           text={row.comment}
                           isLoading={isTTSLoading}
@@ -135,21 +133,21 @@ const VerbalFeedbackTable: React.FC<VerbalFeedbackTableProps> = ({
             </div>
             
             {tableRows.length > 10 && (
-              <div className="text-center pt-4">
+              <div className="text-center pt-2">
                 <Button
                   onClick={() => setShowAll(!showAll)}
                   variant="outline"
                   size="sm"
-                  className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft"
+                  className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft text-xs"
                 >
                   {showAll ? (
                     <>
-                      <ChevronUp className="w-4 h-4 mr-2" />
+                      <ChevronUp className="w-3 h-3 mr-1" />
                       Show Less
                     </>
                   ) : (
                     <>
-                      <ChevronDown className="w-4 h-4 mr-2" />
+                      <ChevronDown className="w-3 h-3 mr-1" />
                       Show More ({tableRows.length - 10} more)
                     </>
                   )}
