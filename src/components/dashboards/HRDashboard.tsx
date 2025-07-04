@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import TeamHealthIndicator from '../TeamHealthIndicator';
@@ -156,7 +157,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-6 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 pt-16 p-6 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-growpoint-primary mx-auto mb-4"></div>
           <p className="text-growpoint-dark">Loading dashboard data...</p>
@@ -167,7 +168,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-6 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 pt-16 p-6 flex items-center justify-center">
         <div className="text-center">
           <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <p className="text-red-600">Error loading dashboard data: {error}</p>
@@ -188,58 +189,60 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <HRDashboardHeader
-          onRestart={onRestart}
-          selectedDepartment={selectedDepartment}
-          onDepartmentChange={setSelectedDepartment}
-          dateRange={dateRange}
-          onDateRangeChange={setDateRange}
-          aiAssistantPanel={<AIAssistantPanel data={aiInsightsData} isHR={true} />}
-          onViewFeedbackTable={() => setShowFeedbackScreen(true)}
-        />
+    <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20">
+      <HRDashboardHeader
+        onRestart={onRestart}
+        selectedDepartment={selectedDepartment}
+        onDepartmentChange={setSelectedDepartment}
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+        aiAssistantPanel={<AIAssistantPanel data={aiInsightsData} isHR={true} />}
+        onViewFeedbackTable={() => setShowFeedbackScreen(true)}
+      />
 
-        <HRKPICards
-          totalResponses={feedbackData.length}
-          totalDepartments={processedData.departments.length}
-          engagementStats={departmentEngagementStats}
-          highRiskTeams={highRiskTeams}
-        />
+      <div className="pt-16 p-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <HRKPICards
+            totalResponses={feedbackData.length}
+            totalDepartments={processedData.departments.length}
+            engagementStats={departmentEngagementStats}
+            highRiskTeams={highRiskTeams}
+          />
 
-        {/* Department Health Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {processedData.departments.slice(0, 3).map((dept, index) => (
-            <TeamHealthIndicator 
-              key={index}
-              frictionLevel={dept.friction}
-              engagementScore={dept.engagement}
-              teamName={dept.department}
-            />
-          ))}
-        </div>
-
-        {/* Analytics Charts - Fixed Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="w-full">
-            <HREngagementChart
-              departments={processedData.departments}
-              chartConfig={chartConfig}
-            />
+          {/* Department Health Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {processedData.departments.slice(0, 3).map((dept, index) => (
+              <TeamHealthIndicator 
+                key={index}
+                frictionLevel={dept.friction}
+                engagementScore={dept.engagement}
+                teamName={dept.department}
+              />
+            ))}
           </div>
-          <div className="w-full">
-            <HRDistributionChart
-              departments={processedData.departments}
-              chartConfig={chartConfig}
-            />
-          </div>
-        </div>
 
-        <HRCohesionFrictionAnalysis
-          cohesionFrictionData={processedData.cohesionFrictionData}
-          engagementVariabilityData={processedData.engagementVariabilityData}
-          chartConfig={chartConfig}
-        />
+          {/* Analytics Charts - Fixed Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="w-full">
+              <HREngagementChart
+                departments={processedData.departments}
+                chartConfig={chartConfig}
+              />
+            </div>
+            <div className="w-full">
+              <HRDistributionChart
+                departments={processedData.departments}
+                chartConfig={chartConfig}
+              />
+            </div>
+          </div>
+
+          <HRCohesionFrictionAnalysis
+            cohesionFrictionData={processedData.cohesionFrictionData}
+            engagementVariabilityData={processedData.engagementVariabilityData}
+            chartConfig={chartConfig}
+          />
+        </div>
       </div>
     </div>
   );
