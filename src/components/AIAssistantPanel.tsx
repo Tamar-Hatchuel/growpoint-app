@@ -24,8 +24,7 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ data, isHR }) => {
       <Button
         onClick={() => setIsModalOpen(true)}
         size="sm"
-        className="text-white px-3 py-1.5 rounded text-xs font-medium h-8"
-        style={{ backgroundColor: '#FFB4A2' }}
+        className="bg-growpoint-primary hover:bg-growpoint-accent text-white px-3 py-1.5 rounded text-xs font-medium h-8"
       >
         <Lightbulb className="w-3 h-3 mr-1.5" />
         Generate AI Insights  
@@ -34,8 +33,6 @@ const AIAssistantPanel: React.FC<AIAssistantPanelProps> = ({ data, isHR }) => {
       <ChatModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        dashboardData={data}
-        userRole={isHR ? 'hr' : 'admin'}
       />
     </>
   );
