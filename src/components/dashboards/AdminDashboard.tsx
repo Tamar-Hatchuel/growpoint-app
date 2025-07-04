@@ -1,10 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { useFeedbackData } from '@/hooks/useFeedbackData';
 import { useAdminDashboardData } from '@/hooks/useAdminDashboardData';
 import AIAssistantPanel from '@/components/AIAssistantPanel';
-import VerbalFeedbackTable from '@/components/VerbalFeedbackTable';
+import VerbableFeedbackScreen from '@/components/VerbableFeedbackScreen';
 import AdminDashboardHeader from './admin/AdminDashboardHeader';
 import AdminKPICards from './admin/AdminKPICards';
 import AdminEngagementChart from './admin/AdminEngagementChart';
@@ -24,6 +24,7 @@ interface AdminDashboardProps {
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) => {
   const { feedbackData, loading, error } = useFeedbackData();
   const userDepartment = userData.userDepartment || userData.department || 'Unknown';
+  const [showFeedbackScreen, setShowFeedbackScreen] = useState(false);
   
   const {
     departmentData,
@@ -56,6 +57,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
     );
   }
 
+  if (showFeedbackScreen) {
+    return (
+      <VerbableFeedbackScreen
+        feedbackData={departmentData}
+        departmentName={userDepartment}
+        onBack={() => setShowFeedbackScreen(false)}
+        userRole="admin"
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -64,6 +76,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
           responseCount={departmentData.length}
           onRestart={onRestart}
           aiAssistantPanel={<AIAssistantPanel data={aiInsightsData} isHR={false} />}
+          onViewFeedbackTable={() => setShowFeedbackScreen(true)}
         />
 
         <AdminKPICards
@@ -92,11 +105,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
         <AdminFrictionAnalysis
           frictionStats={frictionStats}
           userDepartment={userDepartment}
-        />
-
-        <VerbalFeedbackTable 
-          feedbackData={departmentData}
-          departmentName={userDepartment}
         />
       </div>
     </div>

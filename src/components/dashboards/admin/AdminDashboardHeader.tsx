@@ -1,20 +1,22 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Home } from 'lucide-react';
+import { Home, MessageSquare } from 'lucide-react';
 
 interface AdminDashboardHeaderProps {
   userDepartment: string;
   responseCount: number;
   onRestart?: () => void;
   aiAssistantPanel: React.ReactNode;
+  onViewFeedbackTable: () => void;
 }
 
 const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
   userDepartment,
   responseCount,
   onRestart,
-  aiAssistantPanel
+  aiAssistantPanel,
+  onViewFeedbackTable
 }) => {
   return (
     <div className="flex items-center justify-between mb-8">
@@ -40,7 +42,7 @@ const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
           <Button
             onClick={onRestart}
             size="sm"
-            className="text-white px-4 py-2 rounded-md text-sm font-normal"
+            className="text-white px-4 py-2 rounded-md text-sm font-normal w-full"
             style={{ backgroundColor: '#FFB4A2' }}
           >
             <Home className="w-4 h-4 mr-2" />
@@ -48,6 +50,15 @@ const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
           </Button>
         )}
         {aiAssistantPanel}
+        <Button
+          onClick={onViewFeedbackTable}
+          size="sm"
+          className="text-white px-4 py-2 rounded-md text-sm font-normal w-full"
+          style={{ backgroundColor: '#FFB4A2' }}
+        >
+          <MessageSquare className="w-4 h-4 mr-2" />
+          View Feedback Table
+        </Button>
       </div>
     </div>
   );

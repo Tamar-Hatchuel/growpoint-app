@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import TeamHealthIndicator from '../TeamHealthIndicator';
 import { useFeedbackData } from '@/hooks/useFeedbackData';
 import AIAssistantPanel from '@/components/AIAssistantPanel';
-import VerbalFeedbackTable from '@/components/VerbalFeedbackTable';
+import VerbableFeedbackScreen from '@/components/VerbableFeedbackScreen';
 import { useHRDashboardData } from '@/hooks/useHRDashboardData';
 import HRDashboardHeader from './hr/HRDashboardHeader';
 import HRKPICards from './hr/HRKPICards';
@@ -47,6 +46,7 @@ const chartConfig = {
 const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [dateRange, setDateRange] = useState('last-30-days');
+  const [showFeedbackScreen, setShowFeedbackScreen] = useState(false);
   const { feedbackData, loading, error } = useFeedbackData({ 
     selectedDepartment, 
     dateRange 
@@ -148,7 +148,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
     };
   }, [feedbackData, selectedDepartment]);
 
-  // Filter feedback data for verbal feedback panel
+  // Filter feedback data for verbal feedback screen
   const verbalFeedbackData = React.useMemo(() => {
     return selectedDepartment === 'all' ? feedbackData : 
       feedbackData.filter(response => response.department === selectedDepartment);
@@ -176,6 +176,17 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
     );
   }
 
+  if (showFeedbackScreen) {
+    return (
+      <VerbableFeedbackScreen
+        feedbackData={verbalFeedbackData}
+        departmentName={selectedDepartment === 'all' ? undefined : selectedDepartment}
+        onBack={() => setShowFeedbackScreen(false)}
+        userRole="hr"
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -186,6 +197,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
           dateRange={dateRange}
           onDateRangeChange={setDateRange}
           aiAssistantPanel={<AIAssistantPanel data={aiInsightsData} isHR={true} />}
+          onViewFeedbackTable={() => setShowFeedbackScreen(true)}
         />
 
         <HRKPICards
@@ -227,11 +239,6 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
           cohesionFrictionData={processedData.cohesionFrictionData}
           engagementVariabilityData={processedData.engagementVariabilityData}
           chartConfig={chartConfig}
-        />
-
-        <VerbalFeedbackTable 
-          feedbackData={verbalFeedbackData}
-          departmentName={selectedDepartment === 'all' ? undefined : selectedDepartment}
         />
       </div>
     </div>
