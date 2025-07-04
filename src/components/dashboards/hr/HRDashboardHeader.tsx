@@ -39,42 +39,39 @@ const HRDashboardHeader: React.FC<HRDashboardHeaderProps> = ({
             </h1>
           </div>
           
-          {/* Right side - CTAs and Filters */}
-          <div className="flex items-center gap-4">
-            {/* CTA Buttons Group */}
-            <div className="flex items-center gap-2">
-              {onRestart && (
-                <Button 
-                  onClick={onRestart} 
-                  size="sm"
-                  className="text-white px-3 py-1.5 rounded text-xs font-medium h-8"
-                  style={{ backgroundColor: '#FFB4A2' }}
-                >
-                  <Home className="w-3 h-3 mr-1.5" />
-                  Back to Home
-                </Button>
-              )}
-              {aiAssistantPanel}
-              <Button
-                onClick={onViewFeedbackTable}
+          {/* Right side - CTAs and Filters in single row */}
+          <div className="flex items-center gap-3">
+            {/* CTA Buttons */}
+            {onRestart && (
+              <Button 
+                onClick={onRestart} 
                 size="sm"
-                className="text-white px-3 py-1.5 rounded text-xs font-medium h-8"
-                style={{ backgroundColor: '#FFB4A2' }}
+                className="bg-growpoint-primary hover:bg-growpoint-accent text-white px-3 py-1.5 rounded text-xs font-medium h-8"
               >
-                <MessageSquare className="w-3 h-3 mr-1.5" />
-                View Feedback Table
+                <Home className="w-3 h-3 mr-1.5" />
+                Back to Home
               </Button>
-            </div>
+            )}
+            {aiAssistantPanel}
+            <Button
+              onClick={onViewFeedbackTable}
+              size="sm"
+              className="bg-growpoint-primary hover:bg-growpoint-accent text-white px-3 py-1.5 rounded text-xs font-medium h-8"
+            >
+              <MessageSquare className="w-3 h-3 mr-1.5" />
+              View Feedback Table
+            </Button>
             
-            {/* Filters Group */}
-            <div className="border-l border-gray-200 pl-4">
-              <DepartmentFilter 
-                selectedDepartment={selectedDepartment} 
-                onDepartmentChange={onDepartmentChange} 
-                dateRange={dateRange} 
-                onDateRangeChange={onDateRangeChange} 
-              />
-            </div>
+            {/* Vertical separator */}
+            <div className="h-6 w-px bg-gray-300 mx-2" />
+            
+            {/* Filters */}
+            <DepartmentFilter 
+              selectedDepartment={selectedDepartment} 
+              onDepartmentChange={onDepartmentChange} 
+              dateRange={dateRange} 
+              onDateRangeChange={onDateRangeChange} 
+            />
           </div>
         </div>
       </div>

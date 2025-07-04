@@ -21,28 +21,28 @@ const DepartmentFilter: React.FC<DepartmentFilterProps> = ({
 
   if (loading) {
     return (
-      <div className="flex items-center gap-4 bg-white/50 backdrop-blur-sm rounded-lg p-4 border border-growpoint-accent/20">
-        <div className="animate-pulse">Loading filters...</div>
+      <div className="flex items-center gap-2">
+        <div className="animate-pulse text-xs text-growpoint-dark">Loading...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center gap-4 bg-white/50 backdrop-blur-sm rounded-lg p-4 border border-growpoint-accent/20">
-        <div className="text-red-600">Error loading departments</div>
+      <div className="flex items-center gap-2">
+        <div className="text-red-600 text-xs">Error loading</div>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-4 bg-white/50 backdrop-blur-sm rounded-lg p-4 border border-growpoint-accent/20">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="department-filter" className="text-sm font-medium text-growpoint-dark">
-          Filter by Department
+    <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-1">
+        <Label htmlFor="department-filter" className="text-xs font-medium text-growpoint-dark">
+          Department
         </Label>
         <Select value={selectedDepartment} onValueChange={onDepartmentChange}>
-          <SelectTrigger id="department-filter" className="w-48 border-growpoint-accent/30">
+          <SelectTrigger id="department-filter" className="h-8 w-36 text-xs border-growpoint-accent/30">
             <SelectValue placeholder="All Departments" />
           </SelectTrigger>
           <SelectContent>
@@ -56,12 +56,12 @@ const DepartmentFilter: React.FC<DepartmentFilterProps> = ({
         </Select>
       </div>
       
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="date-range-filter" className="text-sm font-medium text-growpoint-dark">
+      <div className="flex flex-col gap-1">
+        <Label htmlFor="date-range-filter" className="text-xs font-medium text-growpoint-dark">
           Time Period
         </Label>
         <Select value={dateRange} onValueChange={onDateRangeChange}>
-          <SelectTrigger id="date-range-filter" className="w-48 border-growpoint-accent/30">
+          <SelectTrigger id="date-range-filter" className="h-8 w-32 text-xs border-growpoint-accent/30">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

@@ -40,13 +40,12 @@ const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
           </div>
           
           {/* Right side - CTAs */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {onRestart && (
               <Button
                 onClick={onRestart}
                 size="sm"
-                className="text-white px-3 py-1.5 rounded text-xs font-medium h-8"
-                style={{ backgroundColor: '#FFB4A2' }}
+                className="bg-growpoint-primary hover:bg-growpoint-accent text-white px-3 py-1.5 rounded text-xs font-medium h-8"
               >
                 <Home className="w-3 h-3 mr-1.5" />
                 Back to Home
@@ -56,8 +55,7 @@ const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
             <Button
               onClick={onViewFeedbackTable}
               size="sm"
-              className="text-white px-3 py-1.5 rounded text-xs font-medium h-8"
-              style={{ backgroundColor: '#FFB4A2' }}
+              className="bg-growpoint-primary hover:bg-growpoint-accent text-white px-3 py-1.5 rounded text-xs font-medium h-8"
             >
               <MessageSquare className="w-3 h-3 mr-1.5" />
               View Feedback Table
