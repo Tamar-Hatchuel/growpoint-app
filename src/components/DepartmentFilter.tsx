@@ -1,57 +1,46 @@
-
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useDepartmentFilter } from '@/hooks/useDepartmentFilter';
-
 interface DepartmentFilterProps {
   selectedDepartment: string;
   onDepartmentChange: (department: string) => void;
   dateRange: string;
   onDateRangeChange: (range: string) => void;
 }
-
 const DepartmentFilter: React.FC<DepartmentFilterProps> = ({
   selectedDepartment,
   onDepartmentChange,
   dateRange,
   onDateRangeChange
 }) => {
-  const { departments, loading, error } = useDepartmentFilter();
-
+  const {
+    departments,
+    loading,
+    error
+  } = useDepartmentFilter();
   if (loading) {
-    return (
-      <div className="flex items-center gap-2">
+    return <div className="flex items-center gap-2">
         <div className="animate-pulse text-xs text-growpoint-dark">Loading...</div>
-      </div>
-    );
+      </div>;
   }
-
   if (error) {
-    return (
-      <div className="flex items-center gap-2">
+    return <div className="flex items-center gap-2">
         <div className="text-red-600 text-xs">Error loading</div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="flex items-center gap-2">
+  return <div className="flex items-center gap-2">
       <div className="flex flex-col gap-1">
-        <Label htmlFor="department-filter" className="text-xs font-medium text-growpoint-dark">
-          Department
-        </Label>
+        
         <Select value={selectedDepartment} onValueChange={onDepartmentChange}>
           <SelectTrigger id="department-filter" className="h-8 w-36 text-xs border-growpoint-accent/30">
             <SelectValue placeholder="All Departments" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Departments</SelectItem>
-            {departments.map((dept) => (
-              <SelectItem key={dept} value={dept}>
+            {departments.map(dept => <SelectItem key={dept} value={dept}>
                 {dept}
-              </SelectItem>
-            ))}
+              </SelectItem>)}
           </SelectContent>
         </Select>
       </div>
@@ -72,8 +61,6 @@ const DepartmentFilter: React.FC<DepartmentFilterProps> = ({
           </SelectContent>
         </Select>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default DepartmentFilter;
