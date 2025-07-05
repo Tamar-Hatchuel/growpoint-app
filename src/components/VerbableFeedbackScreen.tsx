@@ -87,15 +87,13 @@ const VerbableFeedbackScreen: React.FC<VerbableFeedbackScreenProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button onClick={onBack} variant="outline" size="sm" className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft">
+            <Button onClick={onBack} variant="outline" size="sm" className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft font-semibold px-[8px]">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Dashboard
             </Button>
             <div>
-              <h1 className="text-2xl text-growpoint-dark font-bold">Feedback from Team Members</h1>
-              <p className="text-growpoint-dark/70 text-sm">
-                Anonymous written responses{departmentName && ` from ${departmentName}`}
-              </p>
+              <h1 className="text-growpoint-dark font-bold text-3xl">Feedback from Team Members</h1>
+              
             </div>
           </div>
           
