@@ -101,32 +101,47 @@ const VerbableFeedbackScreen: React.FC<VerbableFeedbackScreenProps> = ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 pt-20">
       <div className="max-w-7xl mx-auto p-6">
-        {/* Header with animations */}
-        <div className="flex items-center justify-between mb-6 animate-fade-in">
-          <div className="flex items-center gap-4">
-            <GrowpointCTAButton onClick={onBack} variant="outline" size="default">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </GrowpointCTAButton>
-            <div className="animate-scale-in">
-              <h1 className="text-growpoint-dark font-bold text-3xl">Feedback from Team Members</h1>
-              <p className="text-growpoint-dark/70 text-sm mt-1">
-                {totalComments} comments across {Object.keys(questionLabels).length} questions
-                {departmentName && ` • ${departmentName} Department`}
-              </p>
-            </div>
+        {/* Header Section - Restructured to match dashboard navbar */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4 animate-fade-in">
+          {/* Left Section - Title and Subtitle */}
+          <div className="flex flex-col gap-1 animate-scale-in">
+            <h1 className="text-2xl font-bold text-growpoint-dark">
+              Feedback from Team Members
+            </h1>
+            <p className="text-sm text-growpoint-dark/70">
+              {totalComments} comments across {Object.keys(questionLabels).length} questions
+              {departmentName && ` • ${departmentName} Department`}
+            </p>
           </div>
           
-          {totalComments > 0 && (
-            <GrowpointCTAButton onClick={downloadCSV} className="animate-fade-in">
-              <Download className="w-4 h-4 mr-2" />
-              Download CSV
+          {/* Right Section - CTA Button Group */}
+          <div 
+            className="flex flex-col sm:flex-row gap-2 animate-fade-in"
+            style={{ animationDelay: '100ms' }}
+          >
+            <GrowpointCTAButton 
+              onClick={onBack} 
+              variant="outline" 
+              className="hover:translate-y-[-1px] hover:shadow-md transition-all duration-200"
+            >
+              <ArrowLeft className="w-3 h-3 mr-1.5" />
+              Back to Dashboard
             </GrowpointCTAButton>
-          )}
+            
+            {totalComments > 0 && (
+              <GrowpointCTAButton 
+                onClick={downloadCSV}
+                className="hover:translate-y-[-1px] hover:shadow-md transition-all duration-200"
+              >
+                <Download className="w-3 h-3 mr-1.5" />
+                Download CSV
+              </GrowpointCTAButton>
+            )}
+          </div>
         </div>
 
         {/* Feedback Content */}
-        <Card className="border-growpoint-accent/20 animate-scale-in">
+        <Card className="border-growpoint-accent/20 animate-scale-in" style={{ animationDelay: '200ms' }}>
           <CardContent className="p-6">
             {verbalFeedback.length === 0 ? (
               <div className="text-center py-12 animate-fade-in">
@@ -150,10 +165,10 @@ const VerbableFeedbackScreen: React.FC<VerbableFeedbackScreenProps> = ({
                       open={expandedQuestions.has(questionId)}
                       onOpenChange={() => toggleQuestion(questionId)}
                       className="animate-fade-in"
-                      style={{ animationDelay: `${index * 100}ms` }}
+                      style={{ animationDelay: `${300 + index * 50}ms` }}
                     >
                       <CollapsibleTrigger asChild>
-                        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-growpoint-soft/30 to-growpoint-primary/10 rounded-lg border border-growpoint-accent/20 cursor-pointer hover:bg-growpoint-soft/40 transition-all duration-200 hover:shadow-sm">
+                        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-growpoint-soft/30 to-growpoint-primary/10 rounded-lg border border-growpoint-accent/20 cursor-pointer hover:bg-growpoint-soft/40 transition-all duration-200 hover:shadow-sm hover:translate-y-[-1px]">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 bg-growpoint-primary text-white rounded-full flex items-center justify-center text-xs font-semibold">
                               {questionId}
@@ -180,7 +195,7 @@ const VerbableFeedbackScreen: React.FC<VerbableFeedbackScreenProps> = ({
                           {comments.map((comment, commentIndex) => (
                             <div
                               key={`${comment.id}-${commentIndex}`}
-                              className="flex items-start gap-3 p-4 bg-white rounded-lg border border-growpoint-accent/10 hover:bg-growpoint-soft/10 transition-all duration-200 hover:shadow-sm animate-fade-in"
+                              className="flex items-start gap-3 p-4 bg-white rounded-lg border border-growpoint-accent/10 hover:bg-growpoint-soft/10 transition-all duration-200 hover:shadow-sm hover:translate-y-[-1px] animate-fade-in"
                               style={{ animationDelay: `${commentIndex * 50}ms` }}
                             >
                               <div className="flex-1">
