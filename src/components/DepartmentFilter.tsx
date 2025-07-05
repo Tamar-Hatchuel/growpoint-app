@@ -46,9 +46,7 @@ const DepartmentFilter: React.FC<DepartmentFilterProps> = ({
       </div>
       
       <div className="flex flex-col gap-1">
-        <Label htmlFor="date-range-filter" className="text-xs font-medium text-growpoint-dark">
-          Time Period
-        </Label>
+        
         <Select value={dateRange} onValueChange={onDateRangeChange}>
           <SelectTrigger id="date-range-filter" className="h-8 w-32 text-xs border-growpoint-accent/30">
             <SelectValue />
