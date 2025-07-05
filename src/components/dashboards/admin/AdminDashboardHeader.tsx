@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import { Home, MessageSquare } from 'lucide-react';
+import { GrowpointCTAButton } from '@/components/ui/growpoint-cta-button';
 
 interface AdminDashboardHeaderProps {
   userDepartment: string;
@@ -42,24 +42,16 @@ const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
           {/* Right side - CTAs */}
           <div className="flex items-center gap-3">
             {onRestart && (
-              <Button
-                onClick={onRestart}
-                size="sm"
-                className="bg-growpoint-primary hover:bg-growpoint-accent text-white px-3 py-1.5 rounded text-xs font-medium h-8"
-              >
+              <GrowpointCTAButton onClick={onRestart} variant="outline">
                 <Home className="w-3 h-3 mr-1.5" />
                 Back to Home
-              </Button>
+              </GrowpointCTAButton>
             )}
             {aiAssistantPanel}
-            <Button
-              onClick={onViewFeedbackTable}
-              size="sm"
-              className="bg-growpoint-primary hover:bg-growpoint-accent text-white px-3 py-1.5 rounded text-xs font-medium h-8"
-            >
+            <GrowpointCTAButton onClick={onViewFeedbackTable}>
               <MessageSquare className="w-3 h-3 mr-1.5" />
               View Feedback Table
-            </Button>
+            </GrowpointCTAButton>
           </div>
         </div>
       </div>

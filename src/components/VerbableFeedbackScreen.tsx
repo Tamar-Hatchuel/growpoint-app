@@ -1,76 +1,87 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ChevronDown, ChevronUp, Download, ArrowLeft } from 'lucide-react';
+import { ChevronDown, ChevronUp, Download, ArrowLeft, MessageSquare } from 'lucide-react';
 import { FeedbackResponse } from '@/hooks/useFeedbackData';
 import SurveyTTSButton from './SurveyTTSButton';
 import { useSurveyTTS } from '@/hooks/useSurveyTTS';
+import { GrowpointCTAButton } from '@/components/ui/growpoint-cta-button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
 interface VerbableFeedbackScreenProps {
   feedbackData: FeedbackResponse[];
   departmentName?: string;
   onBack: () => void;
   userRole: 'hr' | 'admin';
 }
+
 const VerbableFeedbackScreen: React.FC<VerbableFeedbackScreenProps> = ({
   feedbackData,
   departmentName,
   onBack,
   userRole
 }) => {
-  const [showAll, setShowAll] = useState(false);
+  const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set(['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7']));
   const {
     speakText,
     isLoading: isTTSLoading
   } = useSurveyTTS();
 
   // Filter feedback that has verbal responses
-  const verbalFeedback = feedbackData.filter(response => response.verbal_q1_comment || response.verbal_q2_comment || response.verbal_q3_comment || response.verbal_q4_comment || response.verbal_q5_comment || response.verbal_q6_comment || response.verbal_q7_comment);
+  const verbalFeedback = feedbackData.filter(response => 
+    response.verbal_q1_comment || 
+    response.verbal_q2_comment || 
+    response.verbal_q3_comment || 
+    response.verbal_q4_comment || 
+    response.verbal_q5_comment || 
+    response.verbal_q6_comment || 
+    response.verbal_q7_comment
+  );
+
   const questionLabels = {
-    'verbal_q1_comment': 'Q1: Team Support',
-    'verbal_q2_comment': 'Q2: Sharing Ideas',
-    'verbal_q3_comment': 'Q3: Handling Conflict',
-    'verbal_q4_comment': 'Q4: Goal Alignment',
-    'verbal_q5_comment': 'Q5: Trust & Commitments',
-    'verbal_q6_comment': 'Q6: Inclusive Environment',
-    'verbal_q7_comment': 'Q7: Team Communication'
-  };
-  const getVerbalComments = (response: FeedbackResponse) => {
-    const comments: {
-      question: string;
-      comment: string;
-    }[] = [];
-    Object.entries(questionLabels).forEach(([key, label]) => {
-      const comment = response[key as keyof FeedbackResponse] as string;
-      if (comment) {
-        comments.push({
-          question: label,
-          comment
-        });
-      }
-    });
-    return comments;
+    'Q1': { key: 'verbal_q1_comment', label: 'Team Support' },
+    'Q2': { key: 'verbal_q2_comment', label: 'Sharing Ideas' },
+    'Q3': { key: 'verbal_q3_comment', label: 'Handling Conflict' },
+    'Q4': { key: 'verbal_q4_comment', label: 'Goal Alignment' },
+    'Q5': { key: 'verbal_q5_comment', label: 'Trust & Commitments' },
+    'Q6': { key: 'verbal_q6_comment', label: 'Inclusive Environment' },
+    'Q7': { key: 'verbal_q7_comment', label: 'Team Communication' }
   };
 
-  // Create table rows from feedback data
-  const tableRows = verbalFeedback.flatMap((response, responseIndex) => {
-    const comments = getVerbalComments(response);
-    return comments.map((comment, commentIndex) => ({
-      id: `${response.id || responseIndex}-${commentIndex}`,
-      date: new Date(response.response_date).toLocaleDateString(),
-      question: comment.question,
-      comment: comment.comment,
-      isFirstRow: commentIndex === 0,
-      responseIndex
-    }));
-  });
-  const displayedRows = showAll ? tableRows : tableRows.slice(0, 10);
+  const getCommentsForQuestion = (questionId: string) => {
+    const { key } = questionLabels[questionId as keyof typeof questionLabels];
+    return verbalFeedback
+      .map(response => ({
+        id: response.id,
+        date: new Date(response.response_date).toLocaleDateString(),
+        comment: response[key as keyof FeedbackResponse] as string
+      }))
+      .filter(item => item.comment);
+  };
+
+  const toggleQuestion = (questionId: string) => {
+    const newExpanded = new Set(expandedQuestions);
+    if (newExpanded.has(questionId)) {
+      newExpanded.delete(questionId);
+    } else {
+      newExpanded.add(questionId);
+    }
+    setExpandedQuestions(newExpanded);
+  };
+
   const downloadCSV = () => {
-    const csvData = [['Date', 'Question', 'Verbal Comment'], ...tableRows.map(row => [row.date, row.question, `"${row.comment.replace(/"/g, '""')}"`])];
-    const csvContent = csvData.map(row => row.join(',')).join('\n');
-    const blob = new Blob([csvContent], {
-      type: 'text/csv;charset=utf-8;'
+    const csvData = [['Question', 'Date', 'Verbal Comment']];
+    
+    Object.entries(questionLabels).forEach(([questionId, { label }]) => {
+      const comments = getCommentsForQuestion(questionId);
+      comments.forEach(comment => {
+        csvData.push([`${questionId}: ${label}`, comment.date, `"${comment.comment.replace(/"/g, '""')}"`]);
+      });
     });
+
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
@@ -82,85 +93,123 @@ const VerbableFeedbackScreen: React.FC<VerbableFeedbackScreenProps> = ({
       document.body.removeChild(link);
     }
   };
-  return <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+
+  const totalComments = Object.keys(questionLabels).reduce((total, questionId) => {
+    return total + getCommentsForQuestion(questionId).length;
+  }, 0);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 pt-20">
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Header with animations */}
+        <div className="flex items-center justify-between mb-6 animate-fade-in">
           <div className="flex items-center gap-4">
-            <Button onClick={onBack} variant="outline" size="sm" className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft font-semibold px-[8px]">
+            <GrowpointCTAButton onClick={onBack} variant="outline" size="default">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Dashboard
-            </Button>
-            <div>
+            </GrowpointCTAButton>
+            <div className="animate-scale-in">
               <h1 className="text-growpoint-dark font-bold text-3xl">Feedback from Team Members</h1>
-              
+              <p className="text-growpoint-dark/70 text-sm mt-1">
+                {totalComments} comments across {Object.keys(questionLabels).length} questions
+                {departmentName && ` • ${departmentName} Department`}
+              </p>
             </div>
           </div>
           
-          {tableRows.length > 0 && <Button onClick={downloadCSV} className="text-white px-4 py-2 rounded-md text-sm font-normal" style={{
-          backgroundColor: '#FFB4A2'
-        }}>
+          {totalComments > 0 && (
+            <GrowpointCTAButton onClick={downloadCSV} className="animate-fade-in">
               <Download className="w-4 h-4 mr-2" />
               Download CSV
-            </Button>}
+            </GrowpointCTAButton>
+          )}
         </div>
 
-        {/* Feedback Table */}
-        <Card className="border-growpoint-accent/20">
+        {/* Feedback Content */}
+        <Card className="border-growpoint-accent/20 animate-scale-in">
           <CardContent className="p-6">
-            {verbalFeedback.length === 0 ? <div className="text-center py-8">
-                <p className="text-growpoint-dark/60">
-                  No verbal feedback available yet. Encourage team members to add comments when filling out surveys.
+            {verbalFeedback.length === 0 ? (
+              <div className="text-center py-12 animate-fade-in">
+                <MessageSquare className="w-12 h-12 text-growpoint-dark/30 mx-auto mb-4" />
+                <p className="text-growpoint-dark/60 text-lg">
+                  No verbal feedback available yet.
                 </p>
-              </div> : <div className="space-y-4">
-                <div className="border border-growpoint-accent/20 rounded-lg overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-growpoint-soft/30">
-                        <TableHead className="text-growpoint-dark font-medium text-sm h-10 py-3">Date</TableHead>
-                        <TableHead className="text-growpoint-dark font-medium text-sm h-10 py-3">Question</TableHead>
-                        <TableHead className="text-growpoint-dark font-medium text-sm h-10 py-3">Verbal Comment</TableHead>
-                        <TableHead className="w-12 h-10 py-3"></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {displayedRows.map((row, index) => <TableRow key={row.id} className={`
-                            hover:bg-growpoint-soft/20 transition-colors h-12
-                            ${index % 2 === 0 ? 'bg-white' : 'bg-growpoint-soft/10'}
-                            ${row.isFirstRow && index > 0 ? 'border-t-2 border-growpoint-accent/30' : ''}
-                          `}>
-                          <TableCell className="text-sm text-growpoint-dark/70 py-3">
-                            {row.isFirstRow ? row.date : ''}
-                          </TableCell>
-                          <TableCell className="text-sm font-medium text-growpoint-dark/80 py-3">
-                            {row.question}
-                          </TableCell>
-                          <TableCell className="text-growpoint-dark text-sm py-3">
-                            "{row.comment}"
-                          </TableCell>
-                          <TableCell className="py-3">
-                            <SurveyTTSButton text={row.comment} isLoading={isTTSLoading} onSpeak={speakText} />
-                          </TableCell>
-                        </TableRow>)}
-                    </TableBody>
-                  </Table>
-                </div>
-                
-                {tableRows.length > 10 && <div className="text-center pt-3">
-                    <Button onClick={() => setShowAll(!showAll)} variant="outline" size="sm" className="border-growpoint-accent/30 text-growpoint-dark hover:bg-growpoint-soft text-sm">
-                      {showAll ? <>
-                          <ChevronUp className="w-4 h-4 mr-2" />
-                          Show Less
-                        </> : <>
-                          <ChevronDown className="w-4 h-4 mr-2" />
-                          Show More ({tableRows.length - 10} more)
-                        </>}
-                    </Button>
-                  </div>}
-              </div>}
+                <p className="text-growpoint-dark/50 text-sm mt-2">
+                  Encourage team members to add comments when filling out surveys.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {Object.entries(questionLabels).map(([questionId, { label }], index) => {
+                  const comments = getCommentsForQuestion(questionId);
+                  if (comments.length === 0) return null;
+
+                  return (
+                    <Collapsible
+                      key={questionId}
+                      open={expandedQuestions.has(questionId)}
+                      onOpenChange={() => toggleQuestion(questionId)}
+                      className="animate-fade-in"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                      <CollapsibleTrigger asChild>
+                        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-growpoint-soft/30 to-growpoint-primary/10 rounded-lg border border-growpoint-accent/20 cursor-pointer hover:bg-growpoint-soft/40 transition-all duration-200 hover:shadow-sm">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-growpoint-primary text-white rounded-full flex items-center justify-center text-xs font-semibold">
+                              {questionId}
+                            </div>
+                            <div>
+                              <h3 className="text-growpoint-dark font-semibold text-lg">
+                                {label}
+                              </h3>
+                              <p className="text-growpoint-dark/60 text-sm">
+                                {comments.length} comment{comments.length !== 1 ? 's' : ''}
+                              </p>
+                            </div>
+                          </div>
+                          {expandedQuestions.has(questionId) ? (
+                            <ChevronUp className="w-5 h-5 text-growpoint-dark/60 transition-transform duration-200" />
+                          ) : (
+                            <ChevronDown className="w-5 h-5 text-growpoint-dark/60 transition-transform duration-200" />
+                          )}
+                        </div>
+                      </CollapsibleTrigger>
+                      
+                      <CollapsibleContent className="mt-4 animate-accordion-down">
+                        <div className="space-y-3 pl-4">
+                          {comments.map((comment, commentIndex) => (
+                            <div
+                              key={`${comment.id}-${commentIndex}`}
+                              className="flex items-start gap-3 p-4 bg-white rounded-lg border border-growpoint-accent/10 hover:bg-growpoint-soft/10 transition-all duration-200 hover:shadow-sm animate-fade-in"
+                              style={{ animationDelay: `${commentIndex * 50}ms` }}
+                            >
+                              <div className="flex-1">
+                                <p className="text-growpoint-dark text-sm leading-relaxed mb-2">
+                                  "{comment.comment}"
+                                </p>
+                                <p className="text-growpoint-dark/50 text-xs">
+                                  {comment.date}
+                                </p>
+                              </div>
+                              <SurveyTTSButton
+                                text={comment.comment}
+                                isLoading={isTTSLoading}
+                                onSpeak={speakText}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default VerbableFeedbackScreen;
