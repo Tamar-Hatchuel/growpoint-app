@@ -26,7 +26,7 @@ const HRDashboardHeader: React.FC<HRDashboardHeaderProps> = ({
           {/* Left side - Logo and Title */}
           <div className="flex items-center gap-3">
             <img src="/lovable-uploads/d7cd3b1a-3e3c-49c7-8986-3d60c7901948.png" alt="GrowPoint" className="w-6 h-6 object-contain" />
-            <h1 className="text-lg font-medium text-growpoint-dark">
+            <h1 className="text-lg text-growpoint-dark font-bold">
               GrowPoint – HR Dashboard
             </h1>
           </div>
