@@ -1,1 +1,5 @@
+
 project_id = "sbbkpvleuyaftlgoxqea"
+
+[functions.tts-synthesize]
+verify_jwt = false

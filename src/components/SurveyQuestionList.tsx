@@ -30,7 +30,7 @@ const SurveyQuestionList: React.FC<SurveyQuestionListProps> = ({
   onResponse,
   onVerbalResponse
 }) => {
-  const { speakText, isLoading } = useSurveyTTS();
+  const { speakText, isLoading, error } = useSurveyTTS();
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -49,6 +49,7 @@ const SurveyQuestionList: React.FC<SurveyQuestionListProps> = ({
           text={questions[currentQuestion]}
           isLoading={isLoading}
           onSpeak={speakText}
+          error={error}
         />
       </div>
       

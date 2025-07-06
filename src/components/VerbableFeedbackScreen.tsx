@@ -24,7 +24,8 @@ const VerbableFeedbackScreen: React.FC<VerbableFeedbackScreenProps> = ({
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set(['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7']));
   const {
     speakText,
-    isLoading: isTTSLoading
+    isLoading: isTTSLoading,
+    error: ttsError
   } = useSurveyTTS();
 
   // Filter feedback that has verbal responses
@@ -191,6 +192,7 @@ const VerbableFeedbackScreen: React.FC<VerbableFeedbackScreenProps> = ({
                                   text={comment.comment}
                                   isLoading={isTTSLoading}
                                   onSpeak={speakText}
+                                  error={ttsError}
                                 />
                               </div>
                             ))}
