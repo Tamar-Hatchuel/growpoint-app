@@ -35,22 +35,22 @@ export const useSurveyTTS = () => {
     setError(null);
     
     try {
-      console.log('Calling TTS with text:', text.substring(0, 50) + '...');
+      console.log('Calling ElevenLabs TTS with text:', text.substring(0, 50) + '...');
       console.log('Retry count:', retryCount);
       
       const { data, error } = await supabase.functions.invoke('tts-synthesize', {
         body: { text }
       });
 
-      console.log('TTS function response:', { data, error });
+      console.log('ElevenLabs TTS function response:', { data, error });
 
       if (error) {
-        console.error('TTS Supabase Error:', error);
+        console.error('ElevenLabs TTS Supabase Error:', error);
         throw new Error(error.message || 'Failed to generate speech');
       }
 
       if (data?.success && data?.audioUrl) {
-        console.log('Playing TTS audio');
+        console.log('Playing ElevenLabs TTS audio');
         
         // Create and configure audio element
         const audio = new Audio(data.audioUrl);
@@ -93,15 +93,15 @@ export const useSurveyTTS = () => {
         audio.load();
         
       } else {
-        console.error('Invalid TTS response:', data);
+        console.error('Invalid ElevenLabs TTS response:', data);
         if (data?.error) {
           throw new Error(data.error);
         }
-        throw new Error('Invalid response from TTS service');
+        throw new Error('Invalid response from ElevenLabs TTS service');
       }
 
     } catch (error) {
-      console.error('Failed to synthesize speech:', error);
+      console.error('Failed to synthesize speech with ElevenLabs:', error);
       const errorMessage = error.message || 'Failed to generate speech';
       setError(errorMessage);
 
@@ -109,9 +109,10 @@ export const useSurveyTTS = () => {
       if (retryCount < 2 && (
         errorMessage.includes('Rate limit') || 
         errorMessage.includes('network') ||
-        errorMessage.includes('timeout')
+        errorMessage.includes('timeout') ||
+        errorMessage.includes('server error')
       )) {
-        console.log(`Retrying TTS (attempt ${retryCount + 1})`);
+        console.log(`Retrying ElevenLabs TTS (attempt ${retryCount + 1})`);
         setTimeout(() => {
           speakText(text, retryCount + 1);
         }, 1000 * (retryCount + 1));
@@ -121,8 +122,10 @@ export const useSurveyTTS = () => {
       // Show user-friendly error message with more details
       toast({
         title: "Speech Generation Failed",
-        description: errorMessage.includes('Google Cloud TTS API access denied') 
-          ? "Please check your Google Cloud API setup and billing."
+        description: errorMessage.includes('ElevenLabs API authentication failed') 
+          ? "Please check your ElevenLabs API key configuration."
+          : errorMessage.includes('Rate limit exceeded')
+          ? "Too many requests. Please wait a moment and try again."
           : errorMessage,
         variant: "destructive"
       });
