@@ -36,13 +36,16 @@ export const useSurveyTTS = () => {
     
     try {
       console.log('Calling TTS with text:', text.substring(0, 50) + '...');
+      console.log('Retry count:', retryCount);
       
       const { data, error } = await supabase.functions.invoke('tts-synthesize', {
         body: { text }
       });
 
+      console.log('TTS function response:', { data, error });
+
       if (error) {
-        console.error('TTS Error:', error);
+        console.error('TTS Supabase Error:', error);
         throw new Error(error.message || 'Failed to generate speech');
       }
 
@@ -91,6 +94,9 @@ export const useSurveyTTS = () => {
         
       } else {
         console.error('Invalid TTS response:', data);
+        if (data?.error) {
+          throw new Error(data.error);
+        }
         throw new Error('Invalid response from TTS service');
       }
 
@@ -112,10 +118,12 @@ export const useSurveyTTS = () => {
         return;
       }
 
-      // Show user-friendly error message
+      // Show user-friendly error message with more details
       toast({
         title: "Speech Generation Failed",
-        description: errorMessage,
+        description: errorMessage.includes('Google Cloud TTS API access denied') 
+          ? "Please check your Google Cloud API setup and billing."
+          : errorMessage,
         variant: "destructive"
       });
     } finally {
