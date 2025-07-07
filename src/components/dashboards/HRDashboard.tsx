@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import TeamHealthIndicator from '../TeamHealthIndicator';
@@ -100,7 +99,6 @@ const HRDashboard: React.FC<HRDashboardProps> = ({
     }
   };
 
-  // Calculate department-specific engagement score with corrected status logic (1-5 scale)
   const departmentEngagementStats = React.useMemo(() => {
     const filteredData = selectedDepartment === 'all' ? feedbackData : 
       feedbackData.filter(response => response.department === selectedDepartment);
@@ -133,12 +131,10 @@ const HRDashboard: React.FC<HRDashboardProps> = ({
     return { average: Number(Math.min(5, average).toFixed(1)), status, color };
   }, [feedbackData, selectedDepartment]);
 
-  // Calculate high-risk teams based on friction >= 3.6
   const highRiskTeams = React.useMemo(() => {
     return processedData.departments.filter(dept => dept.friction >= 3.6).length;
   }, [processedData.departments]);
 
-  // Process data for AI insights with verbal comments
   const aiInsightsData = React.useMemo(() => {
     const filteredData = selectedDepartment === 'all' ? feedbackData : 
       feedbackData.filter(response => response.department === selectedDepartment);
@@ -194,7 +190,6 @@ const HRDashboard: React.FC<HRDashboardProps> = ({
     };
   }, [feedbackData, selectedDepartment]);
 
-  // Filter feedback data for verbal feedback screen
   const verbalFeedbackData = React.useMemo(() => {
     return selectedDepartment === 'all' ? feedbackData : 
       feedbackData.filter(response => response.department === selectedDepartment);
@@ -237,7 +232,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20">
       <HRDashboardHeader
-        onRestart={onBackToRoleSelection || onRestart}
+        onRestart={onBackToRoleSelection}
         onDownloadCSV={downloadCSV}
         selectedDepartment={selectedDepartment}
         onDepartmentChange={setSelectedDepartment}
