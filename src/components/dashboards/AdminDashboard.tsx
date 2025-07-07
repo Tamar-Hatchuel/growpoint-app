@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { useFeedbackData } from '@/hooks/useFeedbackData';
@@ -117,7 +116,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         userDepartment={userDepartment}
         responseCount={departmentData.length}
         onRestart={onBackToRoleSelection || onRestart}
-        onDownloadCSV={downloadCSV}
         aiAssistantPanel={<AIAssistantPanel data={aiInsightsData} isHR={false} />}
         onViewFeedbackTable={() => setShowFeedbackScreen(true)}
       />
