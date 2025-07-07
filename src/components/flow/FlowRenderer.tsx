@@ -51,6 +51,11 @@ const FlowRenderer: React.FC<FlowRendererProps> = ({
 
   const { goBack } = navigation;
 
+  // Handler to navigate to questionnaire
+  const handleAnswerQuestionnaire = () => {
+    goBack('survey');
+  };
+
   switch (currentStep) {
     case 'identification':
       return (
@@ -107,6 +112,7 @@ const FlowRenderer: React.FC<FlowRendererProps> = ({
         <HRDashboard 
           userData={userData}
           onRestart={onRestart}
+          onAnswerQuestionnaire={handleAnswerQuestionnaire}
         />
       );
 
@@ -115,6 +121,7 @@ const FlowRenderer: React.FC<FlowRendererProps> = ({
         <AdminDashboard 
           userData={userData}
           onRestart={onRestart}
+          onAnswerQuestionnaire={handleAnswerQuestionnaire}
         />
       );
 

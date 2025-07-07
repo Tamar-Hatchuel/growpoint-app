@@ -10,6 +10,7 @@ interface AdminDashboardHeaderProps {
   onDownloadCSV: () => void;
   aiAssistantPanel: React.ReactNode;
   onViewFeedbackTable: () => void;
+  onAnswerQuestionnaire?: () => void;
 }
 
 const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
@@ -18,7 +19,8 @@ const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
   onRestart,
   onDownloadCSV,
   aiAssistantPanel,
-  onViewFeedbackTable
+  onViewFeedbackTable,
+  onAnswerQuestionnaire
 }) => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
@@ -43,7 +45,13 @@ const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
           
           {/* Right side - CTAs */}
           <div className="flex items-center gap-3">
-            {onRestart && (
+            {onAnswerQuestionnaire && (
+              <GrowpointCTAButton onClick={onAnswerQuestionnaire} variant="outline">
+                <Home className="w-3 h-3 mr-1.5" />
+                Answer Questionnaire
+              </GrowpointCTAButton>
+            )}
+            {onRestart && !onAnswerQuestionnaire && (
               <GrowpointCTAButton onClick={onRestart} variant="outline">
                 <Home className="w-3 h-3 mr-1.5" />
                 Back to Home

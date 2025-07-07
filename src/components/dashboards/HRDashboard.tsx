@@ -20,6 +20,7 @@ interface HRDashboardProps {
   };
   onRestart?: () => void;
   onBackToRoleSelection?: () => void;
+  onAnswerQuestionnaire?: () => void;
 }
 
 const chartConfig = {
@@ -48,7 +49,8 @@ const chartConfig = {
 const HRDashboard: React.FC<HRDashboardProps> = ({ 
   userData, 
   onRestart, 
-  onBackToRoleSelection 
+  onBackToRoleSelection,
+  onAnswerQuestionnaire
 }) => {
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [dateRange, setDateRange] = useState('last-30-days');
@@ -245,6 +247,7 @@ const HRDashboard: React.FC<HRDashboardProps> = ({
         onDateRangeChange={setDateRange}
         aiAssistantPanel={<AIAssistantPanel data={aiInsightsData} isHR={true} />}
         onViewFeedbackTable={() => setShowFeedbackScreen(true)}
+        onAnswerQuestionnaire={onAnswerQuestionnaire}
       />
 
       <div className="pt-20 p-6">

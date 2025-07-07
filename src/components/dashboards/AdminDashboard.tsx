@@ -20,12 +20,14 @@ interface AdminDashboardProps {
   };
   onRestart?: () => void;
   onBackToRoleSelection?: () => void;
+  onAnswerQuestionnaire?: () => void;
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ 
   userData, 
   onRestart, 
-  onBackToRoleSelection 
+  onBackToRoleSelection,
+  onAnswerQuestionnaire
 }) => {
   const { feedbackData, loading, error } = useFeedbackData();
   const userDepartment = userData.userDepartment || userData.department || 'Unknown';
@@ -120,6 +122,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         onDownloadCSV={downloadCSV}
         aiAssistantPanel={<AIAssistantPanel data={aiInsightsData} isHR={false} />}
         onViewFeedbackTable={() => setShowFeedbackScreen(true)}
+        onAnswerQuestionnaire={onAnswerQuestionnaire}
       />
 
       <div className="pt-20 p-6">
