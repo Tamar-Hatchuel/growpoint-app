@@ -1,11 +1,12 @@
 
 import React from 'react';
-import { Home, MessageSquare, Lightbulb } from 'lucide-react';
+import { Home, MessageSquare, Lightbulb, Download } from 'lucide-react';
 import DepartmentFilter from '@/components/DepartmentFilter';
 import { GrowpointCTAButton } from '@/components/ui/growpoint-cta-button';
 
 interface HRDashboardHeaderProps {
   onRestart?: () => void;
+  onDownloadCSV: () => void;
   selectedDepartment: string;
   onDepartmentChange: (department: string) => void;
   dateRange: string;
@@ -16,6 +17,7 @@ interface HRDashboardHeaderProps {
 
 const HRDashboardHeader: React.FC<HRDashboardHeaderProps> = ({
   onRestart,
+  onDownloadCSV,
   selectedDepartment,
   onDepartmentChange,
   dateRange,
@@ -52,6 +54,10 @@ const HRDashboardHeader: React.FC<HRDashboardHeaderProps> = ({
             <GrowpointCTAButton onClick={onViewFeedbackTable}>
               <MessageSquare className="w-3 h-3 mr-1.5" />
               View Feedback Table
+            </GrowpointCTAButton>
+            <GrowpointCTAButton onClick={onDownloadCSV}>
+              <Download className="w-3 h-3 mr-1.5" />
+              Download CSV
             </GrowpointCTAButton>
             
             {/* Vertical separator */}
