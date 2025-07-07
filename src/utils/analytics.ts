@@ -16,7 +16,7 @@ export const initGA = () => {
 // Track page views
 export const trackPageView = (path: string, title?: string) => {
   if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('config', 'G-G08PRT4T87', {
+    window.gtag('config', 'G-KCHELYF2CG', {
       page_path: path,
       page_title: title,
     });
