@@ -1,12 +1,13 @@
 
 import React from 'react';
-import { Home, MessageSquare } from 'lucide-react';
+import { Home, MessageSquare, Download } from 'lucide-react';
 import { GrowpointCTAButton } from '@/components/ui/growpoint-cta-button';
 
 interface AdminDashboardHeaderProps {
   userDepartment: string;
   responseCount: number;
   onRestart?: () => void;
+  onDownloadCSV: () => void;
   aiAssistantPanel: React.ReactNode;
   onViewFeedbackTable: () => void;
 }
@@ -15,6 +16,7 @@ const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
   userDepartment,
   responseCount,
   onRestart,
+  onDownloadCSV,
   aiAssistantPanel,
   onViewFeedbackTable
 }) => {
@@ -51,6 +53,10 @@ const AdminDashboardHeader: React.FC<AdminDashboardHeaderProps> = ({
             <GrowpointCTAButton onClick={onViewFeedbackTable}>
               <MessageSquare className="w-3 h-3 mr-1.5" />
               View Feedback Table
+            </GrowpointCTAButton>
+            <GrowpointCTAButton onClick={onDownloadCSV}>
+              <Download className="w-3 h-3 mr-1.5" />
+              Download CSV
             </GrowpointCTAButton>
           </div>
         </div>
