@@ -1,24 +1,28 @@
 
 import React from 'react';
-import { Home, Lightbulb, Download } from 'lucide-react';
+import { Home, Lightbulb, Download, BarChart3 } from 'lucide-react';
 import { GrowpointCTAButton } from '@/components/ui/growpoint-cta-button';
 
 interface FeedbackScreenNavbarProps {
   onBack: () => void;
   onDownloadCSV: () => void;
   onGenerateInsights?: () => void;
+  onViewDashboard?: () => void;
   totalComments: number;
   totalQuestions: number;
   departmentName?: string;
+  userRole?: 'hr' | 'admin';
 }
 
 const FeedbackScreenNavbar: React.FC<FeedbackScreenNavbarProps> = ({
   onBack,
   onDownloadCSV,
   onGenerateInsights,
+  onViewDashboard,
   totalComments,
   totalQuestions,
-  departmentName
+  departmentName,
+  userRole
 }) => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
@@ -48,6 +52,13 @@ const FeedbackScreenNavbar: React.FC<FeedbackScreenNavbarProps> = ({
               <Home className="w-3 h-3 mr-1.5" />
               Back to Home
             </GrowpointCTAButton>
+            
+            {onViewDashboard && (
+              <GrowpointCTAButton onClick={onViewDashboard} variant="outline">
+                <BarChart3 className="w-3 h-3 mr-1.5" />
+                View Dashboard
+              </GrowpointCTAButton>
+            )}
             
             {onGenerateInsights && (
               <GrowpointCTAButton onClick={onGenerateInsights}>

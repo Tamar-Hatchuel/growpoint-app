@@ -12,6 +12,8 @@ interface VerbableFeedbackScreenProps {
   feedbackData: FeedbackResponse[];
   departmentName?: string;
   onBack: () => void;
+  onViewDashboard: () => void;
+  onGenerateInsights?: () => void;
   userRole: 'hr' | 'admin';
 }
 
@@ -19,6 +21,8 @@ const VerbableFeedbackScreen: React.FC<VerbableFeedbackScreenProps> = ({
   feedbackData,
   departmentName,
   onBack,
+  onViewDashboard,
+  onGenerateInsights,
   userRole
 }) => {
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(new Set(['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7']));
@@ -104,9 +108,12 @@ const VerbableFeedbackScreen: React.FC<VerbableFeedbackScreenProps> = ({
       <FeedbackScreenNavbar
         onBack={onBack}
         onDownloadCSV={downloadCSV}
+        onGenerateInsights={onGenerateInsights}
+        onViewDashboard={onViewDashboard}
         totalComments={totalComments}
         totalQuestions={Object.keys(questionLabels).length}
         departmentName={departmentName}
+        userRole={userRole}
       />
       
       {/* Main Content with proper top spacing */}

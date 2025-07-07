@@ -2,7 +2,9 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, ClipboardList, Building2 } from 'lucide-react';
+import { ArrowLeft, ClipboardList, Building2, LogOut } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface AdminChoiceScreenProps {
   onBack: () => void;
@@ -17,17 +19,49 @@ const AdminChoiceScreen: React.FC<AdminChoiceScreenProps> = ({
   onViewDashboard,
   userData 
 }) => {
+  const { toast } = useToast();
+
+  const handleLogOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Logged out successfully",
+        description: "You've been signed out of your account.",
+      });
+      // Navigate to the landing page
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error logging out:', error);
+      toast({
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20 flex items-center justify-center p-4">
       <div className="w-full max-w-md animate-fade-in">
-        <Button
-          variant="ghost"
-          onClick={onBack}
-          className="mb-6 text-growpoint-dark hover:text-growpoint-accent hover:bg-growpoint-soft/50"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
+        <div className="flex justify-between items-center mb-6">
+          <Button
+            variant="ghost"
+            onClick={onBack}
+            className="text-growpoint-dark hover:text-growpoint-accent hover:bg-growpoint-soft/50"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+          
+          <Button
+            variant="outline"
+            onClick={handleLogOut}
+            className="text-growpoint-dark hover:text-growpoint-accent hover:bg-growpoint-soft/50"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Log Out
+          </Button>
+        </div>
         
         <Card className="border-growpoint-accent/20 shadow-lg">
           <CardHeader className="text-center pb-6">

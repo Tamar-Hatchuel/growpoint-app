@@ -19,9 +19,14 @@ interface AdminDashboardProps {
     userDepartment?: string;
   };
   onRestart?: () => void;
+  onBackToRoleSelection?: () => void;
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) => {
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ 
+  userData, 
+  onRestart, 
+  onBackToRoleSelection 
+}) => {
   const { feedbackData, loading, error } = useFeedbackData();
   const userDepartment = userData.userDepartment || userData.department || 'Unknown';
   const [showFeedbackScreen, setShowFeedbackScreen] = useState(false);
@@ -34,6 +39,43 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
     frictionStats,
     aiInsightsData
   } = useAdminDashboardData(feedbackData, userDepartment);
+
+  const downloadCSV = () => {
+    const csvData = [['ID', 'Employee ID', 'Department', 'Engagement Score', 'Cohesion Score', 'Friction Level', 'Response Date', 'Created At', 'Verbal Q1', 'Verbal Q2', 'Verbal Q3', 'Verbal Q4', 'Verbal Q5', 'Verbal Q6', 'Verbal Q7']];
+    
+    departmentData.forEach(response => {
+      csvData.push([
+        response.id,
+        response.employee_id?.toString() || '',
+        response.department,
+        response.engagement_score?.toString() || '',
+        response.cohesion_score?.toString() || '',
+        response.friction_level?.toString() || '',
+        response.response_date,
+        response.created_at,
+        response.verbal_q1_comment || '',
+        response.verbal_q2_comment || '',
+        response.verbal_q3_comment || '',
+        response.verbal_q4_comment || '',
+        response.verbal_q5_comment || '',
+        response.verbal_q6_comment || '',
+        response.verbal_q7_comment || ''
+      ]);
+    });
+
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `admin_feedback_export_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
 
   if (loading) {
     return (
@@ -62,7 +104,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
       <VerbableFeedbackScreen
         feedbackData={departmentData}
         departmentName={userDepartment}
-        onBack={() => setShowFeedbackScreen(false)}
+        onBack={onBackToRoleSelection || (() => setShowFeedbackScreen(false))}
+        onViewDashboard={() => setShowFeedbackScreen(false)}
         userRole="admin"
       />
     );
@@ -73,7 +116,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userData, onRestart }) 
       <AdminDashboardHeader
         userDepartment={userDepartment}
         responseCount={departmentData.length}
-        onRestart={onRestart}
+        onRestart={onBackToRoleSelection || onRestart}
+        onDownloadCSV={downloadCSV}
         aiAssistantPanel={<AIAssistantPanel data={aiInsightsData} isHR={false} />}
         onViewFeedbackTable={() => setShowFeedbackScreen(true)}
       />

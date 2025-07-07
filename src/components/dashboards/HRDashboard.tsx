@@ -19,6 +19,7 @@ interface HRDashboardProps {
     employeeId?: string;
   };
   onRestart?: () => void;
+  onBackToRoleSelection?: () => void;
 }
 
 const chartConfig = {
@@ -44,7 +45,11 @@ const chartConfig = {
   },
 };
 
-const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
+const HRDashboard: React.FC<HRDashboardProps> = ({ 
+  userData, 
+  onRestart, 
+  onBackToRoleSelection 
+}) => {
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [dateRange, setDateRange] = useState('last-30-days');
   const [showFeedbackScreen, setShowFeedbackScreen] = useState(false);
@@ -54,6 +59,46 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
   });
 
   const processedData = useHRDashboardData(feedbackData);
+
+  const downloadCSV = () => {
+    const csvData = [['ID', 'Employee ID', 'Department', 'Engagement Score', 'Cohesion Score', 'Friction Level', 'Response Date', 'Created At', 'Verbal Q1', 'Verbal Q2', 'Verbal Q3', 'Verbal Q4', 'Verbal Q5', 'Verbal Q6', 'Verbal Q7']];
+    
+    const filteredData = selectedDepartment === 'all' ? feedbackData : 
+      feedbackData.filter(response => response.department === selectedDepartment);
+    
+    filteredData.forEach(response => {
+      csvData.push([
+        response.id,
+        response.employee_id?.toString() || '',
+        response.department,
+        response.engagement_score?.toString() || '',
+        response.cohesion_score?.toString() || '',
+        response.friction_level?.toString() || '',
+        response.response_date,
+        response.created_at,
+        response.verbal_q1_comment || '',
+        response.verbal_q2_comment || '',
+        response.verbal_q3_comment || '',
+        response.verbal_q4_comment || '',
+        response.verbal_q5_comment || '',
+        response.verbal_q6_comment || '',
+        response.verbal_q7_comment || ''
+      ]);
+    });
+
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `hr_feedback_export_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
 
   // Calculate department-specific engagement score with corrected status logic (1-5 scale)
   const departmentEngagementStats = React.useMemo(() => {
@@ -182,7 +227,8 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
       <VerbableFeedbackScreen
         feedbackData={verbalFeedbackData}
         departmentName={selectedDepartment === 'all' ? undefined : selectedDepartment}
-        onBack={() => setShowFeedbackScreen(false)}
+        onBack={onBackToRoleSelection || (() => setShowFeedbackScreen(false))}
+        onViewDashboard={() => setShowFeedbackScreen(false)}
         userRole="hr"
       />
     );
@@ -191,7 +237,8 @@ const HRDashboard: React.FC<HRDashboardProps> = ({ userData, onRestart }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-growpoint-soft via-white to-growpoint-primary/20">
       <HRDashboardHeader
-        onRestart={onRestart}
+        onRestart={onBackToRoleSelection || onRestart}
+        onDownloadCSV={downloadCSV}
         selectedDepartment={selectedDepartment}
         onDepartmentChange={setSelectedDepartment}
         dateRange={dateRange}
