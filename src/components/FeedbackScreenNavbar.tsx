@@ -28,7 +28,7 @@ const FeedbackScreenNavbar: React.FC<FeedbackScreenNavbarProps> = ({
           <div className="flex items-center gap-3">
             <img src="/lovable-uploads/d7cd3b1a-3e3c-49c7-8986-3d60c7901948.png" alt="GrowPoint" className="w-6 h-6 object-contain" />
             <div>
-              <h1 className="text-lg font-medium text-growpoint-dark">GrowPoint – Verbal Feedback</h1>
+              <h1 className="text-lg font-medium text-growpoint-dark">GrowPoint – Admin Dashboard</h1>
               <p className="text-xs text-growpoint-dark/70">
                 {totalComments} comments across {totalQuestions} questions
                 {departmentName && ` • ${departmentName} Department`}
