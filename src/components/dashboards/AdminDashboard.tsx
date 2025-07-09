@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { useFeedbackData } from '@/hooks/useFeedbackData';
@@ -43,12 +42,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   } = useAdminDashboardData(feedbackData, userDepartment);
 
   const downloadCSV = () => {
-    const csvData = [['ID', 'Employee ID', 'Department', 'Engagement Score', 'Cohesion Score', 'Friction Level', 'Response Date', 'Created At', 'Verbal Q1', 'Verbal Q2', 'Verbal Q3', 'Verbal Q4', 'Verbal Q5', 'Verbal Q6', 'Verbal Q7']];
+    const csvData = [['ID', 'Department', 'Engagement Score', 'Cohesion Score', 'Friction Level', 'Response Date', 'Created At', 'Verbal Q1', 'Verbal Q2', 'Verbal Q3', 'Verbal Q4', 'Verbal Q5', 'Verbal Q6', 'Verbal Q7']];
     
     departmentData.forEach(response => {
       csvData.push([
         response.id,
-        response.employee_id?.toString() || '',
         response.department,
         response.engagement_score?.toString() || '',
         response.cohesion_score?.toString() || '',

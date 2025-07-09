@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import TeamHealthIndicator from '../TeamHealthIndicator';
@@ -63,7 +62,8 @@ const HRDashboard: React.FC<HRDashboardProps> = ({
   const processedData = useHRDashboardData(feedbackData);
 
   const downloadCSV = () => {
-    const csvData = [['ID', 'Employee ID', 'Department', 'Engagement Score', 'Cohesion Score', 'Friction Level', 'Response Date', 'Created At', 'Verbal Q1', 'Verbal Q2', 'Verbal Q3', 'Verbal Q4', 'Verbal Q5', 'Verbal Q6', 'Verbal Q7']];
+    // Anonymized CSV headers - removed Employee ID
+    const csvData = [['ID', 'Department', 'Engagement Score', 'Cohesion Score', 'Friction Level', 'Response Date', 'Created At', 'Verbal Q1', 'Verbal Q2', 'Verbal Q3', 'Verbal Q4', 'Verbal Q5', 'Verbal Q6', 'Verbal Q7']];
     
     const filteredData = selectedDepartment === 'all' ? feedbackData : 
       feedbackData.filter(response => response.department === selectedDepartment);
@@ -71,7 +71,6 @@ const HRDashboard: React.FC<HRDashboardProps> = ({
     filteredData.forEach(response => {
       csvData.push([
         response.id,
-        response.employee_id?.toString() || '',
         response.department,
         response.engagement_score?.toString() || '',
         response.cohesion_score?.toString() || '',
